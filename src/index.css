@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+/* Custom Scrollbar for Dark Theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0f172a;
+}
+::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+/* Animation Utilities */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes slideInFromBottom {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.animate-in {
+  animation: fadeIn 0.2s ease-out;
+}
+.fade-in-50 {
+  animation: fadeIn 0.2s ease-out;
+}
+.slide-in-from-bottom-8 {
+  animation: slideInFromBottom 0.3s ease-out;
+}
+.zoom-in-95 {
+  animation: zoomIn 0.2s ease-out;
+}
+
+/* Smooth Transitions */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Focus styles */
+input:focus, select:focus, textarea:focus {
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3);
+}
