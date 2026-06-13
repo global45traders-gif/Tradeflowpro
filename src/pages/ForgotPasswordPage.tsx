@@ -1,60 +1,147 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { TrendingUp, ArrowLeft, CheckCircle2, Mail } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { ArrowLeft, CheckCircle2, Mail, Info, ShieldAlert } from 'lucide-react';
+import { useApp } from '../context/AppContext';
+import { useTheme } from '../context/ThemeContext';
+
+// ============================================================================
+// FUTURE NOTE (Supabase Auth Integration):
+// This page is temporary and should be replaced with Supabase Password Recovery
+// once Supabase Auth is implemented.
+//
+// Future implementation will include:
+// - Email verification
+// - Password reset emails
+// - Secure token handling
+// - Google Authentication
+// - Session management
+//
+// Until then, this page acts as a safe placeholder rather than an insecure 
+// password reset system.
+// ============================================================================
 
 export default function ForgotPasswordPage() {
+  const navigate = useNavigate();
+  const { user } = useApp();
+  const { theme } = useTheme();
+
+  const handleLogoClick = () => {
+    if (user.name || user.email) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
+  };
+
   const [email, setEmail] = useState('');
+  const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email.trim()) return;
+
+    setLoading(true);
+    // Simulate API request delay to look professional
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    setLoading(false);
     setSent(true);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-100 dark:bg-[#020617] text-slate-900 dark:text-slate-100 flex items-center justify-center px-4 transition-colors duration-200">
       <div className="w-full max-w-sm">
-        <Link to="/login" className="flex items-center space-x-2 mb-8 text-slate-400 hover:text-slate-200 transition-colors">
+        {/* Back navigation */}
+        <Link to="/login" className="flex items-center space-x-2 mb-8 text-slate-500 dark:text-slate-400 hover:text-slate-950 dark:hover:text-slate-200 transition-colors">
           <ArrowLeft className="h-4 w-4" />
           <span className="text-xs">Back to login</span>
         </Link>
 
-        <div className="flex items-center space-x-2 mb-8">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/30">
-            <TrendingUp className="h-4 w-4" />
-          </div>
-          <span className="text-sm font-bold tracking-tight text-white">TradeFlow<span className="text-emerald-400">Pro</span></span>
-        </div>
+        {/* Logo */}
+        <button
+          onClick={handleLogoClick}
+          aria-label="TradeFlowPro Logo"
+          className="flex items-center bg-transparent border-none p-0 outline-none focus:outline-none focus-visible:opacity-80 transition-opacity cursor-pointer hover:opacity-90 mb-8"
+          type="button"
+        >
+          <img
+            src={theme === 'dark' ? '/logo-unified-dark.png' : '/logo-unified.png'}
+            alt="TradeFlowPro Logo"
+            className="h-11 w-auto object-contain"
+          />
+        </button>
 
         {sent ? (
-          <div className="text-center">
-            <CheckCircle2 className="h-10 w-10 text-emerald-400 mx-auto mb-4" />
-            <h1 className="text-xl font-bold text-white">Check your email</h1>
-            <p className="mt-2 text-xs text-slate-400">We've sent a password reset link to {email}</p>
-            <Link to="/login" className="mt-6 inline-block text-xs text-emerald-400 hover:text-emerald-300 transition-colors">
-              ← Back to login
+          /* Success Screen */
+          <div className="text-center animate-in fade-in-50 duration-200">
+            <CheckCircle2 className="h-12 w-12 text-emerald-600 dark:text-emerald-400 mx-auto mb-4" />
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Request received.</h1>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Our support team will review your request and contact you if additional information is required.
+            </p>
+            <Link to="/login" className="mt-8 inline-block w-full rounded-lg bg-slate-250 dark:bg-slate-900 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 py-2.5 text-xs font-bold transition-colors cursor-pointer text-center">
+              Back to Login
             </Link>
           </div>
         ) : (
-          <>
-            <h1 className="text-xl font-bold text-white">Reset password</h1>
-            <p className="mt-1 text-xs text-slate-400">Enter your email to receive a reset link</p>
+          /* Input Form & Support Screen */
+          <div className="animate-in fade-in-50 duration-200">
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Forgot Your Password?</h1>
+            <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+              Password recovery is currently being upgraded as part of our authentication improvements. 
+              If you need assistance accessing your account, please contact our support team and we will help you regain access.
+            </p>
+
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               <div>
-                <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Email</label>
+                <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                  Account Email
+                </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500" />
-                  <input type="email" required placeholder="you@example.com" value={email}
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-500" />
+                  <input
+                    type="email"
+                    required
+                    placeholder="Enter your email address"
+                    value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-900 px-3 py-2.5 pl-9 text-xs text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors" />
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2.5 pl-9 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors"
+                  />
                 </div>
               </div>
-              <button type="submit"
-                className="w-full rounded-lg bg-emerald-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition-colors">
-                Send reset link
+
+              <button
+                type="submit"
+                disabled={loading || !email}
+                className="w-full rounded-lg bg-emerald-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center space-x-1.5"
+              >
+                {loading ? (
+                  <span className="animate-pulse">Submitting Request...</span>
+                ) : (
+                  <span>Request Assistance</span>
+                )}
               </button>
             </form>
-          </>
+
+            {/* Need Help Support Card */}
+            <div className="border border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm p-4 rounded-xl mt-6 text-left flex items-start space-x-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mt-0.5">
+                <Info className="h-4 w-4" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-1">Need Help?</h3>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-2">
+                  Contact our support team and include the email address used for your account.
+                </p>
+                <a
+                  href="mailto:support@tradeflow.pro"
+                  className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-300 transition-colors inline-flex items-center space-x-1"
+                >
+                  <span>support@tradeflow.pro</span>
+                </a>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

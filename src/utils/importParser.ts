@@ -55,8 +55,12 @@ export function autoDetectColumns(headers: string[]): Record<string, string> {
 
 // Check if required fields are mapped
 export function getMissingRequiredFields(mapping: Record<string, string>): string[] {
-  const required = ['date', 'symbol', 'type', 'entryPrice', 'exitPrice', 'quantity'];
-  return required.filter(f => !mapping[f]);
+  const required = ['date', 'symbol', 'type', 'entryPrice', 'quantity'];
+  const missing = required.filter(f => !mapping[f]);
+  if (!mapping['exitPrice'] && !mapping['pnl']) {
+    missing.push('exitPrice');
+  }
+  return missing;
 }
 
 // Detect if file looks like a Zerodha tradebook
@@ -95,8 +99,20 @@ function parseZerodhaRow(row: Record<string, unknown>, mapping: Record<string, s
   const date = parseDate(dateRaw);
   const symbol = getVal('symbol').toUpperCase();
   const entryPrice = getNum('entryPrice');
-  const exitPrice = getNum('exitPrice');
+  let exitPrice = getNum('exitPrice');
   const quantity = Math.round(getNum('quantity'));
+
+  const filePnLRaw = getVal('pnl');
+  const hasFilePnL = filePnLRaw !== '';
+  const filePnL = getNum('pnl');
+
+  if (exitPrice === 0 && hasFilePnL && quantity > 0) {
+    if (type === 'BUY') {
+      exitPrice = entryPrice + (filePnL / quantity);
+    } else {
+      exitPrice = entryPrice - (filePnL / quantity);
+    }
+  }
 
   if (!date || !symbol || !entryPrice || !quantity) return null;
 
@@ -116,25 +132,40 @@ function parseZerodhaRow(row: Record<string, unknown>, mapping: Record<string, s
   // For Zerodha, exit price might be 0 if position is still open
   const finalExitPrice = exitPrice > 0 ? exitPrice : entryPrice; // If no exit, treat as breakeven
 
-  const pnl = type === 'BUY'
+  const pnl = hasFilePnL ? filePnL : (type === 'BUY'
     ? (finalExitPrice - entryPrice) * quantity
-    : (entryPrice - finalExitPrice) * quantity;
+    : (entryPrice - finalExitPrice) * quantity);
 
   const pnlPercent = entryPrice * quantity > 0 ? (pnl / (entryPrice * quantity)) * 100 : 0;
   const rrRatio = stopLoss && stopLoss !== entryPrice
     ? (type === 'BUY' ? (finalExitPrice - entryPrice) / (entryPrice - stopLoss) : (entryPrice - finalExitPrice) / (stopLoss - entryPrice))
     : 0;
 
-  const charges: TradeCharges = {
-    brokerage: getNum('charges') > 0 ? getNum('charges') * 0.4 : 20,
-    stt: getNum('charges') > 0 ? getNum('charges') * 0.1 : 0,
-    gst: 2,
-    sebiTurnover: 0.01,
-    stampDuty: 0.5,
-    exchangeTxn: 1,
-    total: getNum('charges') > 0 ? getNum('charges') : 25,
-    mode: 'flat',
-  };
+  const fileChargesRaw = getVal('charges');
+  const hasFileCharges = fileChargesRaw !== '';
+  const fileCharges = getNum('charges');
+
+  const charges: TradeCharges = hasFileCharges
+    ? {
+        brokerage: fileCharges,
+        stt: 0,
+        gst: 0,
+        sebiTurnover: 0,
+        stampDuty: 0,
+        exchangeTxn: 0,
+        total: fileCharges,
+        mode: 'flat',
+      }
+    : {
+        brokerage: getNum('charges') > 0 ? getNum('charges') * 0.4 : 20,
+        stt: getNum('charges') > 0 ? getNum('charges') * 0.1 : 0,
+        gst: 2,
+        sebiTurnover: 0.01,
+        stampDuty: 0.5,
+        exchangeTxn: 1,
+        total: getNum('charges') > 0 ? getNum('charges') : 25,
+        mode: 'flat',
+      };
 
   const netPnl = calculateNetPnl(pnl, charges);
 
@@ -185,10 +216,23 @@ function parseStandardRow(row: Record<string, unknown>, mapping: Record<string, 
   const rawType = getVal('type').toUpperCase();
   const type: 'BUY' | 'SELL' = rawType.includes('SELL') || rawType.includes('SHORT') ? 'SELL' : 'BUY';
   const entryPrice = getNum('entryPrice');
-  const exitPrice = getNum('exitPrice');
+  let exitPrice = getNum('exitPrice');
   const quantity = Math.round(getNum('quantity'));
 
-  if (!date || !symbol || !entryPrice || !exitPrice || !quantity) return null;
+  const filePnLRaw = getVal('pnl');
+  const hasFilePnL = filePnLRaw !== '';
+  const filePnL = getNum('pnl');
+
+  if (exitPrice === 0 && hasFilePnL && quantity > 0) {
+    if (type === 'BUY') {
+      exitPrice = entryPrice + (filePnL / quantity);
+    } else {
+      exitPrice = entryPrice - (filePnL / quantity);
+    }
+  }
+
+  if (!date || !symbol || !entryPrice || !quantity) return null;
+  if (exitPrice === 0 && !hasFilePnL) return null;
 
   const stopLoss = getNum('stopLoss') || undefined;
   const target = getNum('target') || undefined;
@@ -203,11 +247,29 @@ function parseStandardRow(row: Record<string, unknown>, mapping: Record<string, 
   else if (segmentRaw.includes('CDS') || segmentRaw.includes('CURRENCY')) segment = 'CDS';
   else if (segmentRaw.includes('MCX') || segmentRaw.includes('COM')) segment = 'MCX';
 
-  const pnl = calculateTradePnL(type, entryPrice, exitPrice, quantity);
-  const pnlPercent = calculateTradePnLPercent(type, entryPrice, exitPrice, quantity);
+  const pnl = hasFilePnL ? filePnL : calculateTradePnL(type, entryPrice, exitPrice, quantity);
+  const pnlPercent = hasFilePnL
+    ? (entryPrice * quantity > 0 ? (filePnL / (entryPrice * quantity)) * 100 : 0)
+    : calculateTradePnLPercent(type, entryPrice, exitPrice, quantity);
   const rrRatio = calculateTradeRR(type, entryPrice, exitPrice, stopLoss);
 
-  const charges = calculateCharges(segment, type, entryPrice, exitPrice, quantity);
+  const fileChargesRaw = getVal('charges');
+  const hasFileCharges = fileChargesRaw !== '';
+  const fileCharges = getNum('charges');
+
+  const charges = hasFileCharges
+    ? {
+        brokerage: fileCharges,
+        stt: 0,
+        gst: 0,
+        sebiTurnover: 0,
+        stampDuty: 0,
+        exchangeTxn: 0,
+        total: fileCharges,
+        mode: 'flat' as const,
+      }
+    : calculateCharges(segment, type, entryPrice, exitPrice, quantity);
+
   const netPnl = calculateNetPnl(pnl, charges);
 
   return {
@@ -241,23 +303,32 @@ function parseStandardRow(row: Record<string, unknown>, mapping: Record<string, 
 function parseDate(val: string): string {
   if (!val) return '';
 
+  const cleanVal = val.trim().split(/\s+/)[0];
+
   // Already YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(cleanVal)) return cleanVal;
 
-  // DD/MM/YYYY or DD-MM-YYYY
-  const dmyMatch = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-  if (dmyMatch) {
-    return `${dmyMatch[3]}-${dmyMatch[2].padStart(2, '0')}-${dmyMatch[1].padStart(2, '0')}`;
-  }
+  // DD/MM/YYYY or MM/DD/YYYY (or with dashes)
+  const match = cleanVal.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (match) {
+    const first = parseInt(match[1], 10);
+    const second = parseInt(match[2], 10);
+    const year = match[3];
 
-  // MM/DD/YYYY (US format) - only if month > 12 to disambiguate
-  const mdyMatch = val.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
-  if (mdyMatch) {
-    return `${mdyMatch[3]}-${mdyMatch[1].padStart(2, '0')}-${mdyMatch[2].padStart(2, '0')}`;
+    // If first is > 12, it must be DD/MM/YYYY
+    if (first > 12) {
+      return `${year}-${String(second).padStart(2, '0')}-${String(first).padStart(2, '0')}`;
+    }
+    // If second is > 12, it must be MM/DD/YYYY
+    if (second > 12) {
+      return `${year}-${String(first).padStart(2, '0')}-${String(second).padStart(2, '0')}`;
+    }
+    // Otherwise, it's ambiguous. Default to DD/MM/YYYY (most common in India/Europe)
+    return `${year}-${String(second).padStart(2, '0')}-${String(first).padStart(2, '0')}`;
   }
 
   // Excel serial date number
-  const num = Number(val);
+  const num = Number(cleanVal);
   if (!isNaN(num) && num > 30000 && num < 60000) {
     const excelDate = new Date((num - 25569) * 86400 * 1000);
     if (!isNaN(excelDate.getTime())) {
@@ -266,14 +337,14 @@ function parseDate(val: string): string {
   }
 
   // Try native Date parsing
-  const d = new Date(val);
+  const d = new Date(cleanVal);
   if (!isNaN(d.getTime())) {
     return d.toISOString().split('T')[0];
   }
 
   // Handle "20-Mar-2026" or "20 Mar 2026" format
   const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
-  const parts = val.split(/[\/\-\s]+/);
+  const parts = cleanVal.split(/[\/\-\s]+/);
   if (parts.length === 3) {
     let day: string, month: string, year: string;
     const dayIdx = parts.findIndex(p => /^\d{1,2}$/.test(p));

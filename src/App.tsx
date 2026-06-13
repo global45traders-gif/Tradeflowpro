@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider, useApp } from './context/AppContext';
+import { ThemeProvider } from './context/ThemeContext';
 import DashboardApp from './DashboardApp';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
@@ -33,9 +34,11 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <AppProvider>
-        <AppRoutes />
-      </AppProvider>
+      <ThemeProvider>
+        <AppProvider>
+          <AppRoutes />
+        </AppProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }

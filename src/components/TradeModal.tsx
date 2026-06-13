@@ -14,9 +14,25 @@ interface TradeModalProps {
   account: { brokeragePerOrder: number; brokeragePercent: number; capital: number; currencyCode?: string };
   rules: Array<{ id: string; name: string; description: string; category: string; isActive: boolean; isDefault: boolean }>;
   currency?: string;
+  defaultDate?: string | null;
 }
 
-export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, account, rules, currency: currencyProp }: TradeModalProps) {
+const formatDateFriendly = (dateStr: any) => {
+  if (!dateStr) return '';
+  const dateString = typeof dateStr === 'string'
+    ? dateStr
+    : (dateStr instanceof Date ? dateStr.toISOString().split('T')[0] : String(dateStr));
+  const parts = dateString.split('-');
+  if (parts.length !== 3) return dateString;
+  const year = parts[0];
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const month = months[monthIdx] || parts[1];
+  return `${day} ${month} ${year}`;
+};
+
+export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, account, rules, currency: currencyProp, defaultDate }: TradeModalProps) {
   const currency = currencyProp || account.currencyCode || 'USD';
   const [date, setDate] = useState('');
   const [symbol, setSymbol] = useState('');
@@ -91,8 +107,8 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
         setAutoCalcCharges(tradeToEdit.charges.mode === 'itemized');
         setRulesFollowed(tradeToEdit.rulesFollowed || []);
       } else {
-        const today = new Date().toISOString().split('T')[0];
-        setDate(today);
+        const initialDate = defaultDate || new Date().toISOString().split('T')[0];
+        setDate(initialDate);
         setSymbol('');
         setType('BUY');
         setEntryPrice('');
@@ -112,7 +128,7 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
         setRulesFollowed([]);
       }
     }
-  }, [isOpen, tradeToEdit]);
+  }, [isOpen, tradeToEdit, defaultDate]);
 
   // Auto-calculate charges when relevant fields change
   useEffect(() => {
@@ -171,14 +187,21 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-md" onClick={onClose}></div>
 
-      <div className="relative w-full max-w-3xl max-h-[90vh] transform rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden flex flex-col animate-in fade-in-50 slide-in-from-bottom-8">
+      <div className="relative w-full max-w-3xl max-h-[90vh] transform rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden flex flex-col animate-in fade-in-50 slide-in-from-bottom-8">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
-          <h3 className="text-lg font-bold text-slate-100 flex items-center space-x-2">
-            <Sparkles className="h-5 w-5 text-emerald-400" />
-            <span>{tradeToEdit ? 'Edit Trade' : 'Log New Trade'}</span>
-          </h3>
-          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+        <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+              <Sparkles className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
+              <span>{tradeToEdit ? 'Edit Trade' : 'Log New Trade'}</span>
+            </h3>
+            {date && (
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mt-1">
+                Date: <span className="text-emerald-600 dark:text-emerald-400">{formatDateFriendly(date)}</span>
+              </p>
+            )}
+          </div>
+          <button onClick={onClose} className="rounded-lg p-1.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">
             <X className="h-5 w-5" />
           </button>
         </div>
@@ -218,28 +241,27 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Segment Selection */}
             <div className="relative">
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                 Market Segment
               </label>
               <button
                 type="button"
                 onClick={() => setShowSegmentDropdown(!showSegmentDropdown)}
-                className="w-full flex items-center justify-between rounded-xl border border-slate-800 bg-slate-950 px-4 py-2.5 text-sm font-medium text-slate-200 hover:border-slate-700 transition-colors"
+                className="w-full flex items-center justify-between rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 hover:border-slate-400 dark:hover:border-slate-700 transition-colors"
               >
                 <span>{SEGMENT_LABELS[segment as keyof typeof SEGMENT_LABELS] || segment}</span>
-                <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${showSegmentDropdown ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`h-4 w-4 text-slate-400 dark:text-slate-400 transition-transform ${showSegmentDropdown ? 'rotate-180' : ''}`} />
               </button>
               {showSegmentDropdown && (
-                <div className="absolute z-10 mt-1 w-full rounded-xl border border-slate-800 bg-slate-950 shadow-xl overflow-hidden">
+                <div className="absolute z-10 mt-1 w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 shadow-xl overflow-hidden">
                   {SEGMENT_OPTIONS.map((seg) => (
                     <button
                       key={seg}
                       type="button"
                       onClick={() => { setSegment(seg); setShowSegmentDropdown(false); }}
                       className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                        segment === seg ? 'bg-emerald-500/10 text-emerald-400' : 'text-slate-300 hover:bg-slate-900'
+                        segment === seg ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 dark:hover:text-white'
                       }`}
                     >
                       <span className="font-bold">{SEGMENT_LABELS[seg]}</span>
@@ -253,28 +275,28 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
             <div className="grid gap-5 sm:grid-cols-2">
               {/* Symbol */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Symbol / Instrument <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="text" required placeholder="e.g. RELIANCE, NIFTY"
                   value={symbol} onChange={(e) => setSymbol(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors"
                 />
               </div>
 
               {/* Trade Type */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Direction <span className="text-red-400">*</span>
                 </label>
-                <div className="grid grid-cols-2 gap-2 rounded-xl bg-slate-950 p-1 border border-slate-800">
+                <div className="grid grid-cols-2 gap-2 rounded-xl bg-white dark:bg-slate-950 p-1 border border-slate-200 dark:border-slate-800">
                   <button type="button" onClick={() => setType('BUY')}
-                    className={`rounded-lg py-2 text-[11px] font-extrabold tracking-wider uppercase transition-all ${type === 'BUY' ? 'bg-emerald-500 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'}`}>
+                    className={`rounded-lg py-2 text-[11px] font-extrabold tracking-wider uppercase transition-all ${type === 'BUY' ? 'bg-emerald-500 text-slate-950 shadow' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>
                     BUY
                   </button>
                   <button type="button" onClick={() => setType('SELL')}
-                    className={`rounded-lg py-2 text-[11px] font-extrabold tracking-wider uppercase transition-all ${type === 'SELL' ? 'bg-red-500 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'}`}>
+                    className={`rounded-lg py-2 text-[11px] font-extrabold tracking-wider uppercase transition-all ${type === 'SELL' ? 'bg-red-500 text-slate-950 shadow' : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'}`}>
                     SELL
                   </button>
                 </div>
@@ -282,39 +304,39 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
 
               {/* Date */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Date</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Date</label>
                 <input
                   type="date" required value={date} onChange={(e) => setDate(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                 />
               </div>
 
               {/* Quantity */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Quantity <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="number" required min="1" placeholder="e.g. 50"
                   value={quantity} onChange={(e) => setQuantity(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                 />
               </div>
 
               {/* Leverage */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Leverage
                 </label>
                 <div className="flex items-center space-x-2">
                   <input
                     type="number" min="1" max="50" step="1" placeholder="1"
                     value={leverage} onChange={(e) => setLeverage(e.target.value)}
-                    className="w-20 rounded-xl border border-slate-800 bg-slate-950 px-3 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
+                    className="w-20 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                   />
-                  <span className="text-xs font-bold text-slate-400">×</span>
+                  <span className="text-xs font-bold text-slate-400 dark:text-slate-400">×</span>
                   {previewEntry && previewQty && (
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-[10px] text-slate-500 dark:text-slate-500">
                       Exposure: {formatCurrencyWithSign(previewEntry * previewQty * (parseFloat(leverage) || 1), currency).replace('+', '')}
                     </span>
                   )}
@@ -323,133 +345,114 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
 
               {/* Entry Price */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Entry Price (₹) <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="number" required step="any" min="0.01" placeholder="e.g. 2400.00"
                   value={entryPrice} onChange={(e) => setEntryPrice(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                 />
               </div>
 
               {/* Exit Price */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Exit Price (₹) <span className="text-red-400">*</span>
                 </label>
                 <input
                   type="number" required step="any" min="0.01" placeholder="e.g. 2460.00"
                   value={exitPrice} onChange={(e) => setExitPrice(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                 />
               </div>
 
               {/* Stop Loss */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Stop Loss Price
                 </label>
                 <input
                   type="number" step="any" min="0.01" placeholder="e.g. 2380.00"
                   value={stopLoss} onChange={(e) => setStopLoss(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                 />
               </div>
 
               {/* Target */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Target Price
                 </label>
                 <input
                   type="number" step="any" min="0.01" placeholder="e.g. 2500.00"
                   value={target} onChange={(e) => setTarget(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors font-mono"
                 />
               </div>
 
               {/* Setup/Strategy */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Trade Setup</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Trade Setup</label>
                 <select value={setup} onChange={(e) => setSetup(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 focus:border-emerald-500 focus:outline-none transition-colors">
-                  <option value="">Select Setup</option>
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:outline-none transition-colors">
+                  <option value="" className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200">Select Setup</option>
                   {['Breakout', 'Pullback', 'FVG', 'Support/Resistance', 'Trend Follow', 'Reversal', 'Range', 'Scalp', 'Other'].map(s => (
-                    <option key={s} value={s} className="bg-slate-950">{s}</option>
+                    <option key={s} value={s} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200">{s}</option>
                   ))}
                 </select>
               </div>
 
               {/* Entry Time */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Entry Time</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Entry Time</label>
                 <input type="time" value={entryTime} onChange={(e) => setEntryTime(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 focus:border-emerald-500 focus:outline-none transition-colors font-mono" />
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:outline-none transition-colors font-mono" />
               </div>
 
               {/* Exit Time */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Exit Time</label>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Exit Time</label>
                 <input type="time" value={exitTime} onChange={(e) => setExitTime(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 focus:border-emerald-500 focus:outline-none transition-colors font-mono" />
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:outline-none transition-colors font-mono" />
               </div>
 
               {/* Emotion */}
               <div>
-                <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
                   Psychological State
                 </label>
                 <select value={emotion} onChange={(e) => setEmotion(e.target.value)}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 focus:border-emerald-500 focus:outline-none transition-colors">
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 focus:border-emerald-500 focus:outline-none transition-colors">
                   {emotions.map((emo) => (
-                    <option key={emo.value} value={emo.value} className="bg-slate-950">{emo.label}</option>
+                    <option key={emo.value} value={emo.value} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200">{emo.label}</option>
                   ))}
                 </select>
               </div>
 
-              {/* Auto/Manual Toggle */}
-              <div className="flex items-end">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAutoCalcCharges(!autoCalcCharges);
-                    if (!autoCalcCharges) {
-                      const c = calculateCharges(segment, type, previewEntry, previewExit, previewQty, account.brokeragePerOrder, account.brokeragePercent);
-                      setCharges(c);
-                    }
-                  }}
-                  className={`w-full flex items-center justify-center space-x-2 rounded-xl border py-2.5 text-xs font-bold transition-all duration-200 ${
-                    autoCalcCharges
-                      ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20'
-                      : 'border-slate-700 bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
-                  }`}
-                >
-                  <Calculator className="h-4 w-4" />
-                  <span>{autoCalcCharges ? '✓ Auto-Calculate Charges (Indian Market)' : '⚙ Manual Charges Mode'}</span>
-                </button>
-              </div>
+              {/* Grid cell alignment placeholder */}
+              <div></div>
             </div>
 
             {/* Rule Adherence */}
             {rules.length > 0 && (
-              <div className="rounded-xl border border-slate-800 bg-slate-950/60 overflow-hidden">
+              <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60 overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setShowRuleSelector(!showRuleSelector)}
-                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-slate-900 transition-colors"
+                  className="flex w-full items-center justify-between px-4 py-3 text-left hover:bg-slate-100/50 dark:hover:bg-slate-900 transition-colors"
                 >
                   <div className="flex items-center space-x-2">
-                    <Shield className="h-4 w-4 text-emerald-400" />
-                    <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Rule Adherence</span>
-                    <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                    <Shield className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
+                    <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Rule Adherence</span>
+                    <span className="rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                       {rulesFollowed.length}/{rules.filter(r => r.isActive).length}
                     </span>
                   </div>
-                  <ChevronDown className={`h-4 w-4 text-slate-400 transition-transform ${showRuleSelector ? 'rotate-180' : ''}`} />
+                  <ChevronDown className={`h-4 w-4 text-slate-400 dark:text-slate-400 transition-transform ${showRuleSelector ? 'rotate-180' : ''}`} />
                 </button>
                 {showRuleSelector && (
-                  <div className="border-t border-slate-800 p-4 space-y-2">
+                  <div className="border-t border-slate-200 dark:border-slate-800 p-4 space-y-2">
                     <p className="text-[10px] text-slate-500 mb-2">Select the rules you FOLLOWED on this trade:</p>
                     {rules.filter(r => r.isActive).map(rule => {
                       const isFollowed = rulesFollowed.includes(rule.id);
@@ -461,14 +464,14 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
                             isFollowed ? prev.filter(id => id !== rule.id) : [...prev, rule.id]
                           )}
                           className={`w-full flex items-center justify-between rounded-lg p-2.5 text-left transition-all ${
-                            isFollowed ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-slate-900 border border-slate-800'
+                            isFollowed ? 'bg-emerald-500/10 border border-emerald-500/30' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800'
                           }`}
                         >
                           <div>
-                            <span className={`text-xs font-bold ${isFollowed ? 'text-emerald-300' : 'text-slate-400'}`}>{rule.name}</span>
+                            <span className={`text-xs font-bold ${isFollowed ? 'text-emerald-600 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-400'}`}>{rule.name}</span>
                             <p className="text-[10px] text-slate-500 mt-0.5">{rule.description}</p>
                           </div>
-                          {isFollowed ? <Check className="h-4 w-4 text-emerald-400 flex-shrink-0" /> : <X className="h-4 w-4 text-slate-600 flex-shrink-0" />}
+                          {isFollowed ? <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" /> : <X className="h-4 w-4 text-slate-400 dark:text-slate-600 flex-shrink-0" />}
                         </button>
                       );
                     })}
@@ -479,11 +482,11 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
 
             {/* Notes */}
             <div>
-              <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Notes</label>
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Notes</label>
               <textarea
                 rows={3} placeholder="Why did you take this trade? What setup did you follow?"
                 value={notes} onChange={(e) => setNotes(e.target.value)}
-                className="w-full rounded-xl border border-slate-800 bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors resize-none"
+                className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors resize-none font-sans"
               ></textarea>
             </div>
 
@@ -493,20 +496,14 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
               charges={charges}
               onChange={setCharges}
               autoCalc={autoCalcCharges}
-              onToggleAutoCalc={() => {
-                setAutoCalcCharges(!autoCalcCharges);
-                if (!autoCalcCharges) {
-                  const c = calculateCharges(segment, type, previewEntry, previewExit, previewQty, account.brokeragePerOrder, account.brokeragePercent);
-                  setCharges(c);
-                }
-              }}
+              setAutoCalc={setAutoCalcCharges}
             />
           </form>
         </div>
 
         {/* Optional Validation Hints (informational only — never block) */}
         {hints.length > 0 && !tradeToEdit && (
-          <div className="border-t border-slate-800 px-6 py-3 space-y-1.5 bg-amber-500/[0.02]">
+          <div className="border-t border-slate-200 dark:border-slate-800 px-6 py-3 space-y-1.5 bg-amber-500/[0.02] dark:bg-amber-500/[0.02]">
             {hints.map((hint, i) => {
               const HintIcon = hint.icon;
               return (
@@ -520,9 +517,9 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
         )}
 
         {/* Footer Buttons — always enabled */}
-        <div className="border-t border-slate-800 px-6 py-4 flex justify-end space-x-3 bg-slate-950/40">
+        <div className="border-t border-slate-200 dark:border-slate-800 px-6 py-4 flex justify-end space-x-3 bg-slate-50 dark:bg-slate-950/40">
           <button type="button" onClick={onClose}
-            className="rounded-xl border border-slate-700 bg-slate-800 px-5 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-all">
+            className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all">
             Cancel
           </button>
           <button onClick={handleSubmit}

@@ -14,6 +14,7 @@ export interface TradeLike {
   quantity: number;
   leverage?: number;
   stopLoss?: number;
+  target?: number;
   pnl: number;
   pnlPercent: number;
   rrRatio: number;
@@ -302,12 +303,65 @@ export function computeAnalytics(
 
   activeRules.forEach(r => { ruleViolationMap[r.id] = { name: r.name, count: 0, total: 0 }; });
 
+  const dateCounts: Record<string, number> = {};
   sorted.forEach(t => {
-    const followed = t.rulesFollowed || [];
+    dateCounts[t.date] = (dateCounts[t.date] || 0) + 1;
+  });
+
+  sorted.forEach(t => {
     activeRules.forEach(r => {
       ruleViolationMap[r.id].total++;
       ruleTotal++;
-      if (followed.includes(r.id)) {
+
+      let wasFollowed = false;
+      switch (r.id) {
+        case 'r_stoploss':
+          wasFollowed = t.stopLoss !== undefined && t.stopLoss !== null && t.stopLoss > 0;
+          break;
+        case 'r_risk': {
+          if (!t.stopLoss || t.stopLoss <= 0) {
+            wasFollowed = true; // Missing stop loss is NOT counted as risk limit violation (avoids double penalty)
+          } else {
+            const riskAmount = Math.abs(t.entryPrice - t.stopLoss) * t.quantity;
+            const riskPct = initialCapital > 0 ? (riskAmount / initialCapital) * 100 : 0;
+            wasFollowed = riskPct <= 2;
+          }
+          break;
+        }
+        case 'r_rr': {
+          if (!t.stopLoss || t.stopLoss <= 0) {
+            wasFollowed = false; // Cannot maintain target R:R without stop loss
+          } else {
+            const risk = Math.abs(t.entryPrice - t.stopLoss);
+            if (risk === 0) {
+              wasFollowed = false;
+            } else {
+              const reward = (t.target && t.target > 0)
+                ? Math.abs(t.target - t.entryPrice)
+                : Math.abs(t.exitPrice - t.entryPrice);
+              const rr = reward / risk;
+              wasFollowed = rr >= 2;
+            }
+          }
+          break;
+        }
+        case 'r_overtrade': {
+          const tradesOnDay = dateCounts[t.date] || 0;
+          wasFollowed = tradesOnDay <= 3;
+          break;
+        }
+        case 'r_revenge':
+          wasFollowed = t.emotion !== 'Revenge';
+          break;
+        case 'r_plan':
+          wasFollowed = t.setup !== undefined && t.setup !== null && t.setup !== '' && t.setup !== 'Undefined';
+          break;
+        default:
+          wasFollowed = t.rulesFollowed?.includes(r.id) ?? false;
+          break;
+      }
+
+      if (wasFollowed) {
         ruleFollowed++;
       } else {
         ruleViolationMap[r.id].count++;

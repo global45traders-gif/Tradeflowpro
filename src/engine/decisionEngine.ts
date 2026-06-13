@@ -43,6 +43,8 @@ export interface NormalizedTrade {
   rulesFollowed: string[];
   charges: { total: number };
   accountId: string;
+  stopLoss?: number;
+  target?: number;
 }
 
 export interface NormalizedRule {
@@ -128,15 +130,70 @@ function computeMaxDrawdownPct(sorted: NormalizedTrade[], capital: number): numb
   return peak > 0 ? (maxDD / peak) * 100 : 0;
 }
 
-function computeRuleAdherence(trades: NormalizedTrade[], rules: NormalizedRule[]): number {
+function computeRuleAdherence(trades: NormalizedTrade[], rules: NormalizedRule[], capital: number): number {
   const active = rules.filter(r => r.isActive);
   if (active.length === 0 || trades.length === 0) return 100;
   let total = 0;
   let passed = 0;
+
+  const dateCounts: Record<string, number> = {};
+  trades.forEach(t => {
+    dateCounts[t.date] = (dateCounts[t.date] || 0) + 1;
+  });
+
   for (const t of trades) {
     for (const r of active) {
       total++;
-      if (t.rulesFollowed.includes(r.id)) passed++;
+      let wasFollowed = false;
+
+      switch (r.id) {
+        case 'r_stoploss':
+          wasFollowed = t.stopLoss !== undefined && t.stopLoss !== null && t.stopLoss > 0;
+          break;
+        case 'r_risk': {
+          if (!t.stopLoss || t.stopLoss <= 0) {
+            wasFollowed = true; // Missing stop loss is NOT counted as risk limit violation (avoids double penalty)
+          } else {
+            const riskAmount = Math.abs(t.entryPrice - t.stopLoss) * t.quantity;
+            const riskPercent = capital > 0 ? (riskAmount / capital) * 100 : 0;
+            wasFollowed = riskPercent <= 2;
+          }
+          break;
+        }
+        case 'r_rr': {
+          if (!t.stopLoss || t.stopLoss <= 0) {
+            wasFollowed = false; // Cannot maintain target R:R without stop loss
+          } else {
+            const risk = Math.abs(t.entryPrice - t.stopLoss);
+            if (risk === 0) {
+              wasFollowed = false;
+            } else {
+              const reward = (t.target && t.target > 0)
+                ? Math.abs(t.target - t.entryPrice)
+                : Math.abs(t.exitPrice - t.entryPrice);
+              const rr = reward / risk;
+              wasFollowed = rr >= 2;
+            }
+          }
+          break;
+        }
+        case 'r_overtrade': {
+          const tradesOnDay = dateCounts[t.date] || 0;
+          wasFollowed = tradesOnDay <= 3;
+          break;
+        }
+        case 'r_revenge':
+          wasFollowed = t.emotion !== 'Revenge';
+          break;
+        case 'r_plan':
+          wasFollowed = t.setup !== undefined && t.setup !== null && t.setup !== '' && t.setup !== 'Undefined';
+          break;
+        default:
+          wasFollowed = t.rulesFollowed?.includes(r.id) ?? false;
+          break;
+      }
+
+      if (wasFollowed) passed++;
     }
   }
   return total > 0 ? (passed / total) * 100 : 100;
@@ -220,7 +277,7 @@ export function generateDecision(params: {
 
   const expectancy = r2((winProb * avgWin) - (lossProb * avgLoss));
   const maxDrawdownPct = r2(computeMaxDrawdownPct(sorted, capital));
-  const ruleAdherenceRate = r2(computeRuleAdherence(sorted, rules));
+  const ruleAdherenceRate = r2(computeRuleAdherence(sorted, rules, capital));
 
   const hasSufficientData = totalTrades >= 7;
   const strongPerf = isStrongPerformance({ winRate, totalPnL, totalTrades });

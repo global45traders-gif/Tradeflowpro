@@ -72,12 +72,12 @@ export function normalizeSegment(raw: string | undefined | null): SegmentKey {
   const s = raw.toLowerCase().trim();
 
   // Equity Delivery
-  if (s === 'eq' || s === 'equity' || s === 'delivery' || s === 'cnc' || s === 'eq_del') {
+  if (s === 'equity_delivery' || s === 'eq' || s === 'equity' || s === 'delivery' || s === 'cnc' || s === 'eq_del') {
     return 'equity_delivery';
   }
 
   // Equity Intraday
-  if (s === 'intraday' || s === 'mis' || s === 'eq_intra') {
+  if (s === 'equity_intraday' || s === 'intraday' || s === 'mis' || s === 'eq_intra') {
     return 'equity_intraday';
   }
 

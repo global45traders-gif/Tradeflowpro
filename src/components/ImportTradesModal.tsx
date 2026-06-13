@@ -195,14 +195,14 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
   if (step === 'upload') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={handleClose} />
-        <div className="relative w-full max-w-xl rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in-50 slide-in-from-bottom-8">
-          <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4">
+        <div className="absolute inset-0 bg-slate-950/40 dark:bg-slate-950/80 backdrop-blur-md" onClick={handleClose} />
+        <div className="relative w-full max-w-xl rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden animate-in fade-in-50 slide-in-from-bottom-8">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4">
             <div className="flex items-center space-x-2">
-              <FileSpreadsheet className="h-5 w-5 text-emerald-400" />
-              <h3 className="text-lg font-bold text-slate-100">Import Trades</h3>
+              <FileSpreadsheet className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Import Trades</h3>
             </div>
-            <button onClick={handleClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+            <button onClick={handleClose} className="rounded-lg p-1.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">
               <X className="h-5 w-5" />
             </button>
           </div>
@@ -215,29 +215,29 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
               onDrop={handleDrop}
               onClick={() => fileInputRef.current?.click()}
               className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed p-10 cursor-pointer transition-all duration-200 ${
-                isDragging ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-700 bg-slate-950/40 hover:border-slate-600 hover:bg-slate-900'
+                isDragging ? 'border-emerald-500 bg-emerald-500/5' : 'border-slate-200 dark:border-slate-700 bg-slate-50/40 dark:bg-slate-950/40 hover:border-slate-400 dark:hover:border-slate-600 hover:bg-slate-100/50 dark:hover:bg-slate-900'
               }`}
             >
               {isProcessing ? (
                 <>
-                  <Loader className="h-10 w-10 text-emerald-400 animate-spin mb-3" />
-                  <p className="text-sm font-semibold text-slate-300">Parsing your file...</p>
+                  <Loader className="h-10 w-10 text-emerald-500 dark:text-emerald-400 animate-spin mb-3" />
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Parsing your file...</p>
                 </>
               ) : (
                 <>
-                  <Upload className={`h-10 w-10 mb-3 ${isDragging ? 'text-emerald-400' : 'text-slate-500'}`} />
-                  <p className="text-sm font-bold text-slate-300">{isDragging ? 'Drop file here' : 'Drag & drop your file'}</p>
+                  <Upload className={`h-10 w-10 mb-3 ${isDragging ? 'text-emerald-500 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">{isDragging ? 'Drop file here' : 'Drag & drop your file'}</p>
                   <p className="text-xs text-slate-500 mt-1">or click to browse</p>
-                  <p className="text-[10px] text-slate-600 mt-3">Supports .csv, .xlsx, .xls</p>
+                  <p className="text-[10px] text-slate-400 dark:text-slate-600 mt-3">Supports .csv, .xlsx, .xls</p>
                 </>
               )}
               <input ref={fileInputRef} type="file" accept=".csv,.xlsx,.xls" onChange={handleFileSelect} className="hidden" />
             </div>
 
             {/* Supported Formats Info */}
-            <div className="rounded-xl bg-slate-950/60 p-4 border border-slate-800 space-y-3">
-              <h5 className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-                <Shield className="h-3.5 w-3.5 text-emerald-400" />
+            <div className="rounded-xl bg-slate-50/60 dark:bg-slate-950/60 p-4 border border-slate-200 dark:border-slate-800 space-y-3">
+              <h5 className="text-xs font-bold text-slate-800 dark:text-slate-300 flex items-center space-x-1.5">
+                <Shield className="h-3.5 w-3.5 text-emerald-500 dark:text-emerald-400" />
                 <span>Supported File Formats</span>
               </h5>
               <div className="grid grid-cols-2 gap-2">
@@ -249,8 +249,8 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
                   <div key={f.name} className="flex items-start space-x-2 text-[11px]">
                     <span className="text-base leading-none mt-0.5">{f.icon}</span>
                     <div>
-                      <span className="font-semibold text-slate-300 block">{f.name}</span>
-                      <span className="text-slate-500">{f.desc}</span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-300 block">{f.name}</span>
+                      <span className="text-slate-500 dark:text-slate-500">{f.desc}</span>
                     </div>
                   </div>
                 ))}
@@ -258,14 +258,14 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
             </div>
 
             {/* Column Detection Info */}
-            <div className="rounded-xl bg-slate-950/60 p-4 border border-slate-800">
-              <h5 className="text-xs font-bold text-slate-300 mb-2">Auto Column Detection</h5>
-              <p className="text-[11px] text-slate-400 mb-2">
+            <div className="rounded-xl bg-slate-50/60 dark:bg-slate-950/60 p-4 border border-slate-200 dark:border-slate-800">
+              <h5 className="text-xs font-bold text-slate-800 dark:text-slate-300 mb-2">Auto Column Detection</h5>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 mb-2">
                 We automatically detect your columns even if names differ. Supported variations include:
               </p>
               <div className="flex flex-wrap gap-1">
                 {Object.entries(columnMappings).slice(0, 6).map(([field, variations]) => (
-                  <span key={field} className="rounded bg-slate-800 px-2 py-0.5 text-[9px] text-slate-400">
+                  <span key={field} className="rounded bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[9px] text-slate-600 dark:text-slate-400">
                     <span className="text-emerald-400 font-bold">{field}</span>
                     {' → '}
                     {variations.slice(0, 3).join(', ')}
@@ -310,29 +310,29 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={handleClose} />
-        <div className="relative w-full max-w-2xl max-h-[85vh] rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden flex flex-col animate-in fade-in-50 slide-in-from-bottom-8">
+        <div className="absolute inset-0 bg-slate-950/40 dark:bg-slate-950/80 backdrop-blur-md" onClick={handleClose} />
+        <div className="relative w-full max-w-2xl max-h-[85vh] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden flex flex-col animate-in fade-in-50 slide-in-from-bottom-8">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 flex-shrink-0">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex-shrink-0">
             <div>
-              <h3 className="text-lg font-bold text-slate-100 flex items-center space-x-2">
-                <MapPin className="h-5 w-5 text-amber-400" />
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                <MapPin className="h-5 w-5 text-amber-500" />
                 <span>Map Columns</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {fileName} · {rawData.length} rows detected
               </p>
             </div>
-            <button onClick={handleClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+            <button onClick={handleClose} className="rounded-lg p-1.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">
               <X className="h-5 w-5" />
             </button>
           </div>
 
           {/* Auto-detection status */}
-          <div className={`px-6 py-3 border-b border-slate-800 flex items-center space-x-2 text-xs ${
-            confidence === 'high' ? 'bg-emerald-500/5 text-emerald-400' :
-            confidence === 'medium' ? 'bg-amber-500/5 text-amber-400' :
-            'bg-red-500/5 text-red-400'
+          <div className={`px-6 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center space-x-2 text-xs ${
+            confidence === 'high' ? 'bg-emerald-500/5 text-emerald-600 dark:text-emerald-400' :
+            confidence === 'medium' ? 'bg-amber-500/5 text-amber-600 dark:text-amber-400' :
+            'bg-red-500/5 text-red-500 dark:text-red-400'
           }`}>
             <Check className="h-4 w-4" />
             <span>Auto-detected {mappedCount} columns ({confidence} confidence)</span>
@@ -349,33 +349,45 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
               </h4>
               <div className="grid gap-3 sm:grid-cols-2">
                 {REQUIRED_FIELDS.map(field => {
+                  const isExitPrice = field === 'exitPrice';
+                  const isExitPriceRequired = !mapping['pnl'];
+                  const isFieldRequired = !isExitPrice || isExitPriceRequired;
                   const isMapped = !!mapping[field];
+
+                  let cardStyle = 'border-slate-200 dark:border-slate-800 bg-slate-50/30 dark:bg-slate-950/30';
+                  if (isMapped) {
+                    cardStyle = 'border-emerald-500/20 bg-emerald-500/5';
+                  } else if (isFieldRequired) {
+                    cardStyle = 'border-red-500/30 bg-red-500/5';
+                  }
+
+                  let selectStyle = 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200 focus:border-emerald-500';
+                  if (isMapped) {
+                    selectStyle = 'border-emerald-500/30 bg-white dark:bg-slate-950 text-emerald-600 dark:text-emerald-400 focus:border-emerald-500';
+                  } else if (isFieldRequired) {
+                    selectStyle = 'border-red-500/30 bg-white dark:bg-slate-950 text-red-500 dark:text-red-400 focus:border-red-500';
+                  }
+
                   return (
-                    <div key={field} className={`rounded-xl p-3 border transition-colors ${
-                      isMapped ? 'border-emerald-500/20 bg-emerald-500/5' : 'border-red-500/30 bg-red-500/5'
-                    }`}>
+                    <div key={field} className={`rounded-xl p-3 border transition-colors ${cardStyle}`}>
                       <label className="text-[11px] font-bold text-slate-300 block mb-1.5">
                         {fieldLabels[field]}
-                        {!isMapped && <span className="text-red-400 ml-1">*</span>}
+                        {isFieldRequired && !isMapped && <span className="text-red-400 ml-1">*</span>}
                       </label>
                       <div className="relative">
                         <select
                           value={mapping[field] || ''}
                           onChange={(e) => setMapping(prev => ({ ...prev, [field]: e.target.value }))}
-                          className={`w-full rounded-lg border px-3 py-2 text-xs font-medium appearance-none focus:outline-none transition-colors ${
-                            isMapped
-                              ? 'border-emerald-500/30 bg-slate-950 text-emerald-400 focus:border-emerald-500'
-                              : 'border-red-500/30 bg-slate-950 text-red-400 focus:border-red-500'
-                          }`}
+                          className={`w-full rounded-lg border px-3 py-2 text-xs font-medium appearance-none focus:outline-none transition-colors ${selectStyle}`}
                         >
-                          <option value="">— Select column —</option>
+                          <option value="" className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200">— Select column —</option>
                           {availableColumns.map(col => (
-                            <option key={col} value={col} className="bg-slate-950 text-slate-200">
+                            <option key={col} value={col} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200">
                               {col}
                             </option>
                           ))}
                         </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 pointer-events-none" />
+                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
                       </div>
                       {mapping[field] && (
                         <p className="text-[9px] text-emerald-400 mt-1">Mapped to: "{mapping[field]}"</p>
@@ -395,21 +407,21 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
               <div className="grid gap-3 sm:grid-cols-2">
                 {OPTIONAL_FIELDS.map(field => (
                   <div key={field} className={`rounded-xl p-3 border ${
-                    mapping[field] ? 'border-slate-700 bg-slate-950/60' : 'border-slate-800/50 bg-slate-950/30'
+                    mapping[field] ? 'border-slate-300 dark:border-slate-700 bg-slate-50/60 dark:bg-slate-950/60' : 'border-slate-200 dark:border-slate-800/50 bg-slate-50/30 dark:bg-slate-950/30'
                   }`}>
-                    <label className="text-[11px] font-bold text-slate-400 block mb-1.5">{fieldLabels[field]}</label>
+                    <label className="text-[11px] font-bold text-slate-500 dark:text-slate-400 block mb-1.5">{fieldLabels[field]}</label>
                     <div className="relative">
                       <select
                         value={mapping[field] || ''}
                         onChange={(e) => setMapping(prev => ({ ...prev, [field]: e.target.value }))}
-                        className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-medium text-slate-200 appearance-none focus:border-emerald-500 focus:outline-none transition-colors"
+                        className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2 text-xs font-medium text-slate-800 dark:text-slate-200 appearance-none focus:border-emerald-500 focus:outline-none transition-colors"
                       >
-                        <option value="">— Skip —</option>
+                        <option value="" className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200">— Skip —</option>
                         {availableColumns.map(col => (
-                          <option key={col} value={col} className="bg-slate-950 text-slate-200">{col}</option>
+                          <option key={col} value={col} className="bg-white dark:bg-slate-950 text-slate-800 dark:text-slate-200">{col}</option>
                         ))}
                       </select>
-                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-500 pointer-events-none" />
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
                     </div>
                   </div>
                 ))}
@@ -418,9 +430,9 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
           </div>
 
           {/* Footer */}
-          <div className="border-t border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
+          <div className="border-t border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
             <button onClick={() => { reset(); setStep('upload'); }}
-              className="text-xs text-slate-400 hover:text-white transition-colors">
+              className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
               ← Choose different file
             </button>
             <button
@@ -428,7 +440,7 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
               disabled={missing.length > 0}
               className={`flex items-center space-x-1.5 rounded-xl px-5 py-2.5 text-xs font-bold transition-all ${
                 missing.length > 0
-                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                  ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                   : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-lg shadow-emerald-500/10 hover:from-emerald-400 hover:to-teal-400'
               }`}
             >
@@ -445,51 +457,51 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
   if (step === 'preview') {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="absolute inset-0 bg-slate-950/80 backdrop-blur-md" onClick={handleClose} />
-        <div className="relative w-full max-w-4xl max-h-[85vh] rounded-2xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden flex flex-col animate-in fade-in-50 slide-in-from-bottom-8">
+        <div className="absolute inset-0 bg-slate-950/40 dark:bg-slate-950/80 backdrop-blur-md" onClick={handleClose} />
+        <div className="relative w-full max-w-4xl max-h-[85vh] rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xl overflow-hidden flex flex-col animate-in fade-in-50 slide-in-from-bottom-8">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-slate-800 px-6 py-4 flex-shrink-0">
+          <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6 py-4 flex-shrink-0">
             <div>
-              <h3 className="text-lg font-bold text-slate-100 flex items-center space-x-2">
-                <Download className="h-5 w-5 text-emerald-400" />
+              <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-2">
+                <Download className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
                 <span>Import Preview</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {fileName} · {parsedTrades.length} valid trades detected
               </p>
             </div>
-            <button onClick={handleClose} className="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors">
+            <button onClick={handleClose} className="rounded-lg p-1.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors">
               <X className="h-5 w-5" />
             </button>
           </div>
 
           {/* Summary */}
-          <div className="grid grid-cols-3 gap-3 px-6 py-4 border-b border-slate-800 flex-shrink-0">
+          <div className="grid grid-cols-3 gap-3 px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex-shrink-0">
             <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/20 p-3 text-center">
-              <span className="text-[10px] text-slate-400 uppercase font-bold block">Valid Trades</span>
-              <span className="text-xl font-mono font-black text-emerald-400">{parsedTrades.length}</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">Valid Trades</span>
+              <span className="text-xl font-mono font-black text-emerald-600 dark:text-emerald-400">{parsedTrades.length}</span>
             </div>
             <div className="rounded-xl bg-red-500/5 border border-red-500/20 p-3 text-center">
-              <span className="text-[10px] text-slate-400 uppercase font-bold block">Skipped Rows</span>
-              <span className="text-xl font-mono font-black text-red-400">{Math.max(0, rawData.length - parsedTrades.length - errors.length)}</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">Skipped Rows</span>
+              <span className="text-xl font-mono font-black text-red-500 dark:text-red-400">{Math.max(0, rawData.length - parsedTrades.length - errors.length)}</span>
             </div>
             <div className="rounded-xl bg-amber-500/5 border border-amber-500/20 p-3 text-center">
-              <span className="text-[10px] text-slate-400 uppercase font-bold block">Warnings</span>
-              <span className="text-xl font-mono font-black text-amber-400">{warnings.length}</span>
+              <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold block">Warnings</span>
+              <span className="text-xl font-mono font-black text-amber-500 dark:text-amber-400">{warnings.length}</span>
             </div>
           </div>
 
           {/* Errors & Warnings */}
           {(errors.length > 0 || warnings.length > 0) && (
-            <div className="px-6 py-3 border-b border-slate-800 space-y-2 max-h-32 overflow-y-auto flex-shrink-0">
+            <div className="px-6 py-3 border-b border-slate-200 dark:border-slate-800 space-y-2 max-h-32 overflow-y-auto flex-shrink-0">
               {errors.slice(0, 3).map((err, i) => (
-                <div key={`err-${i}`} className="flex items-start space-x-2 text-[11px] text-red-400">
+                <div key={`err-${i}`} className="flex items-start space-x-2 text-[11px] text-red-500 dark:text-red-400">
                   <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                   <span>{err}</span>
                 </div>
               ))}
               {warnings.slice(0, 5).map((warn, i) => (
-                <div key={`warn-${i}`} className="flex items-start space-x-2 text-[11px] text-amber-400">
+                <div key={`warn-${i}`} className="flex items-start space-x-2 text-[11px] text-amber-600 dark:text-amber-400">
                   <AlertCircle className="h-3.5 w-3.5 mt-0.5 flex-shrink-0" />
                   <span>{warn}</span>
                 </div>
@@ -501,19 +513,19 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
           <div className="flex-1 overflow-y-auto p-6">
             {parsedTrades.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <AlertCircle className="h-12 w-12 text-slate-600 mb-3" />
-                <p className="text-sm font-semibold text-slate-400">No valid trades found in the preview</p>
+                <AlertCircle className="h-12 w-12 text-slate-400 dark:text-slate-600 mb-3" />
+                <p className="text-sm font-semibold text-slate-700 dark:text-slate-400">No valid trades found in the preview</p>
                 <p className="text-xs text-slate-500 mt-1 mb-4">Your file may have different column names. Try mapping them manually.</p>
                 <button onClick={() => setStep('mapping')}
-                  className="flex items-center space-x-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-400 hover:bg-amber-500/20 transition-colors">
+                  className="flex items-center space-x-1.5 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-2 text-xs font-bold text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition-colors">
                   <MapPin className="h-4 w-4" /><span>Map Columns Manually</span>
                 </button>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-xl border border-slate-800 bg-slate-950/40">
+              <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/40">
                 <table className="w-full text-left text-[11px]">
                   <thead>
-                    <tr className="border-b border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                    <tr className="border-b border-slate-200 dark:border-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                       <th className="px-3 py-2">#</th>
                       <th className="px-3 py-2">Date</th>
                       <th className="px-3 py-2">Symbol</th>
@@ -526,32 +538,32 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
                       <th className="px-3 py-2">Emotion</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800/40 font-mono">
+                  <tbody className="divide-y divide-slate-200/40 dark:divide-slate-800/40 font-mono">
                     {parsedTrades.slice(0, 10).map((trade, i) => (
-                      <tr key={i} className="hover:bg-slate-800/20 transition-colors">
+                      <tr key={i} className="hover:bg-slate-100/50 dark:hover:bg-slate-800/20 transition-colors">
                         <td className="px-3 py-2 text-slate-500">{i + 1}</td>
-                        <td className="px-3 py-2 text-slate-400">{trade.date}</td>
-                        <td className="px-3 py-2 text-slate-200 font-semibold">{trade.symbol}</td>
+                        <td className="px-3 py-2 text-slate-500 dark:text-slate-400">{trade.date}</td>
+                        <td className="px-3 py-2 text-slate-900 dark:text-slate-200 font-semibold">{trade.symbol}</td>
                         <td className="px-3 py-2">
                           <span className={`rounded px-1.5 py-0.5 text-[9px] font-bold ${trade.type === 'BUY' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
                             {trade.type}
                           </span>
                         </td>
-                        <td className="px-3 py-2 text-right text-slate-300">{cur}{trade.entryPrice.toLocaleString('en-IN')}</td>
-                        <td className="px-3 py-2 text-right text-slate-300">{cur}{trade.exitPrice.toLocaleString('en-IN')}</td>
-                        <td className="px-3 py-2 text-right text-slate-300">{trade.quantity}</td>
-                        <td className={`px-3 py-2 text-right font-bold ${trade.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <td className="px-3 py-2 text-right text-slate-700 dark:text-slate-300">{cur}{trade.entryPrice.toLocaleString('en-IN')}</td>
+                        <td className="px-3 py-2 text-right text-slate-700 dark:text-slate-300">{cur}{trade.exitPrice.toLocaleString('en-IN')}</td>
+                        <td className="px-3 py-2 text-right text-slate-700 dark:text-slate-300">{trade.quantity}</td>
+                        <td className={`px-3 py-2 text-right font-bold ${trade.pnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
                           {trade.pnl >= 0 ? '+' : ''}{trade.pnl.toFixed(0)}
                         </td>
-                        <td className={`px-3 py-2 text-right font-bold ${trade.netPnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <td className={`px-3 py-2 text-right font-bold ${trade.netPnl >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400'}`}>
                           {trade.netPnl >= 0 ? '+' : ''}{trade.netPnl.toFixed(0)}
                         </td>
                         <td className="px-3 py-2">
                           <span className={`rounded-full px-2 py-0.5 text-[9px] ${
-                            trade.emotion === 'Confidence' ? 'bg-emerald-500/10 text-emerald-400' :
-                            trade.emotion === 'Revenge' ? 'bg-rose-500/10 text-rose-400' :
-                            trade.emotion === 'FOMO' ? 'bg-amber-500/10 text-amber-400' :
-                            'bg-slate-800 text-slate-400'
+                            trade.emotion === 'Confidence' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' :
+                            trade.emotion === 'Revenge' ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400' :
+                            trade.emotion === 'FOMO' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' :
+                            'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                           }`}>
                             {trade.emotion}
                           </span>
@@ -561,7 +573,7 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
                   </tbody>
                 </table>
                 {parsedTrades.length > 10 && (
-                  <div className="px-3 py-2 text-center text-[10px] text-slate-500 border-t border-slate-800">
+                  <div className="px-3 py-2 text-center text-[10px] text-slate-500 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800">
                     Showing first 10 of {parsedTrades.length} trades
                   </div>
                 )}
@@ -570,20 +582,20 @@ export default function ImportTradesModal({ isOpen, onClose, onImport, accountId
           </div>
 
           {/* Footer */}
-          <div className="border-t border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
+          <div className="border-t border-slate-200 dark:border-slate-800 px-6 py-4 flex items-center justify-between flex-shrink-0">
             <button onClick={() => setStep('mapping')}
-              className="flex items-center space-x-1.5 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors">
+              className="flex items-center space-x-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-4 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
               <MapPin className="h-4 w-4" /><span>Adjust Mapping</span>
             </button>
             <div className="flex space-x-3">
               <button onClick={handleClose}
-                className="rounded-xl border border-slate-700 bg-slate-800 px-5 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 transition-colors">
+                className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 px-5 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">
                 Cancel
               </button>
               <button onClick={handleImport} disabled={parsedTrades.length === 0}
                 className={`flex items-center space-x-1.5 rounded-xl px-6 py-2.5 text-xs font-bold transition-all ${
                   parsedTrades.length === 0
-                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                    ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                     : 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-lg shadow-emerald-500/10 hover:from-emerald-400 hover:to-teal-400'
                 }`}>
                 <Check className="h-4 w-4" />

@@ -5,8 +5,9 @@ export interface TradeCharges {
   sebiTurnover: number;
   stampDuty: number;
   exchangeTxn: number;
+  other?: number;
   total: number;
-  mode: 'itemized' | 'flat';
+  mode: 'itemized' | 'flat' | 'itemized_manual';
 }
 
 export interface TradingAccount {

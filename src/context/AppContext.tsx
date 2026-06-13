@@ -59,7 +59,13 @@ function loadJSON<T>(key: string, fallback: T): T {
   try { const raw = localStorage.getItem(key); if (raw) return JSON.parse(raw); } catch {}
   return fallback;
 }
-function saveJSON(key: string, data: unknown) { localStorage.setItem(key, JSON.stringify(data)); }
+function saveJSON(key: string, data: unknown) {
+  try {
+    localStorage.setItem(key, JSON.stringify(data));
+  } catch (err) {
+    console.error(`[Storage] Failed to save key "${key}" to localStorage:`, err);
+  }
+}
 
 // ────────────────────────────────────────────────────────────
 //  ANALYTICS
@@ -176,18 +182,77 @@ function computeAnalytics(trades: Trade[], rules: TradingRule[], capital: number
   const avgLossVal = losses > 0 ? sumNetLosses / losses : 0;
   const expectancy = total > 0 ? ((wins / total) * avgWinVal) - ((losses / total) * avgLossVal) : 0;
 
+  const dateCounts: Record<string, number> = {};
+  for (const t of sorted) {
+    dateCounts[t.date] = (dateCounts[t.date] || 0) + 1;
+  }
+
   const activeRules = rules.filter(r => r.isActive);
   let ruleTotal = 0, rulePassed = 0;
   const violationMap: Record<string, { name: string; count: number; total: number }> = {};
   for (const t of sorted) {
     for (const r of activeRules) {
       ruleTotal++;
-      if (t.rulesFollowed?.includes(r.id)) rulePassed++;
-      else {
-        if (!violationMap[r.id]) violationMap[r.id] = { name: r.name, count: 0, total: 0 };
+      let wasFollowed = false;
+
+      switch (r.id) {
+        case 'r_stoploss':
+          wasFollowed = t.stopLoss !== undefined && t.stopLoss !== null && t.stopLoss > 0;
+          break;
+        case 'r_risk': {
+          if (!t.stopLoss || t.stopLoss <= 0) {
+            wasFollowed = true; // Missing stop loss is NOT counted as risk limit violation (avoids double penalty)
+          } else {
+            const riskAmount = Math.abs(t.entryPrice - t.stopLoss) * t.quantity;
+            const riskPercent = capital > 0 ? (riskAmount / capital) * 100 : 0;
+            wasFollowed = riskPercent <= 2;
+          }
+          break;
+        }
+        case 'r_rr': {
+          if (!t.stopLoss || t.stopLoss <= 0) {
+            wasFollowed = false; // Cannot maintain target R:R without stop loss
+          } else {
+            const risk = Math.abs(t.entryPrice - t.stopLoss);
+            if (risk === 0) {
+              wasFollowed = false;
+            } else {
+              const reward = (t.target && t.target > 0)
+                ? Math.abs(t.target - t.entryPrice)
+                : Math.abs(t.exitPrice - t.entryPrice);
+              const rr = reward / risk;
+              wasFollowed = rr >= 2;
+            }
+          }
+          break;
+        }
+        case 'r_overtrade': {
+          const tradesOnDay = dateCounts[t.date] || 0;
+          wasFollowed = tradesOnDay <= 3;
+          break;
+        }
+        case 'r_revenge':
+          wasFollowed = t.emotion !== 'Revenge';
+          break;
+        case 'r_plan':
+          wasFollowed = t.setup !== undefined && t.setup !== null && t.setup !== '' && t.setup !== 'Undefined';
+          break;
+        default:
+          wasFollowed = t.rulesFollowed?.includes(r.id) ?? false;
+          break;
+      }
+
+      if (wasFollowed) {
+        rulePassed++;
+      } else {
+        if (!violationMap[r.id]) {
+          violationMap[r.id] = { name: r.name, count: 0, total: 0 };
+        }
         violationMap[r.id].count++;
       }
-      if (violationMap[r.id]) violationMap[r.id].total++;
+      if (violationMap[r.id]) {
+        violationMap[r.id].total++;
+      }
     }
   }
   const adherence = ruleTotal > 0 ? (rulePassed / ruleTotal) * 100 : 100;
@@ -286,6 +351,25 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const currency = activeAccount?.currencyCode || 'USD';
   const accountTrades = trades.filter(t => t.accountId === activeAccountId);
 
+  // Sync activeAccountId State with activeAccount when diverged
+  useEffect(() => {
+    if (activeAccount && activeAccountId !== activeAccount.id) {
+      setActiveAccountIdState(activeAccount.id);
+    }
+  }, [activeAccount, activeAccountId]);
+
+  // Self-heal historical trades that lack an accountId
+  useEffect(() => {
+    if (activeAccountId && trades.some(t => !t.accountId)) {
+      setTrades(prev => prev.map(t => {
+        if (!t.accountId) {
+          return { ...t, accountId: activeAccountId };
+        }
+        return t;
+      }));
+    }
+  }, [activeAccountId, trades]);
+
   const setUser = useCallback((data: Partial<{ name: string; email: string }>) => setUserState(prev => ({ ...prev, ...data })), []);
   const setActiveAccount = useCallback((id: string) => setActiveAccountIdState(id), []);
 
@@ -347,9 +431,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteTrade = useCallback((id: string) => setTrades(prev => prev.filter(t => t.id !== id)), []);
   const importTrades = useCallback((newTrades: Trade[]) => {
-    const rec = newTrades.map(t => recalculateTrade(t, activeAccount?.brokeragePerOrder || 20, activeAccount?.brokeragePercent || 0));
+    const rec = newTrades.map(t => {
+      const tradeWithAccount = { ...t, accountId: activeAccountId };
+      return recalculateTrade(tradeWithAccount, activeAccount?.brokeragePerOrder || 20, activeAccount?.brokeragePercent || 0, true);
+    });
     setTrades(prev => [...rec, ...prev]);
-  }, [activeAccount]);
+  }, [activeAccount, activeAccountId]);
 
   const addRule = useCallback((rule: Omit<TradingRule, 'id' | 'isDefault'>) => {
     setRules(prev => [...prev, { ...rule, id: `r_${Date.now()}`, isDefault: false }]);

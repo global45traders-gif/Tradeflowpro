@@ -84,11 +84,24 @@ export const DEFAULT_RULES: TradingRule[] = [
 
 /**
  * Calculate rule adherence statistics across a set of trades.
- * Each trade has a `rulesFollowed: string[]` array of rule IDs that WERE followed.
+ * Each trade is evaluated dynamically using actual trade parameters.
  */
 export function calculateRuleAdherence(
   rules: TradingRule[],
-  trades: Array<{ rulesFollowed?: string[]; netPnl: number; date: string }>
+  trades: Array<{
+    rulesFollowed?: string[];
+    netPnl: number;
+    date: string;
+    stopLoss?: number;
+    entryPrice?: number;
+    exitPrice?: number;
+    quantity?: number;
+    type?: 'BUY' | 'SELL';
+    target?: number;
+    emotion?: string;
+    setup?: string;
+  }>,
+  capital: number = 500000
 ): {
   overallRate: number;
   byRule: Array<{
@@ -137,15 +150,65 @@ export function calculateRuleAdherence(
 
   // Per-date tracking
   const dateMap: Record<string, { total: number; followed: number }> = {};
+  const dateCounts: Record<string, number> = {};
+  trades.forEach(t => {
+    dateCounts[t.date] = (dateCounts[t.date] || 0) + 1;
+  });
 
   trades.forEach(trade => {
-    const followed = trade.rulesFollowed || [];
     const date = trade.date;
 
     if (!dateMap[date]) dateMap[date] = { total: 0, followed: 0 };
 
     activeRules.forEach(rule => {
-      const wasFollowed = followed.includes(rule.id);
+      let wasFollowed = false;
+      switch (rule.id) {
+        case 'r_stoploss':
+          wasFollowed = trade.stopLoss !== undefined && trade.stopLoss !== null && trade.stopLoss > 0;
+          break;
+        case 'r_risk': {
+          if (!trade.stopLoss || trade.stopLoss <= 0) {
+            wasFollowed = true; // Missing stop loss is NOT counted as risk limit violation (avoids double penalty)
+          } else {
+            const riskAmount = Math.abs((trade.entryPrice || 0) - trade.stopLoss) * (trade.quantity || 0);
+            const riskPercent = capital > 0 ? (riskAmount / capital) * 100 : 0;
+            wasFollowed = riskPercent <= 2;
+          }
+          break;
+        }
+        case 'r_rr': {
+          if (!trade.stopLoss || trade.stopLoss <= 0) {
+            wasFollowed = false; // Cannot maintain target R:R without stop loss
+          } else {
+            const risk = Math.abs((trade.entryPrice || 0) - trade.stopLoss);
+            if (risk === 0) {
+              wasFollowed = false;
+            } else {
+              const reward = (trade.target && trade.target > 0)
+                ? Math.abs(trade.target - (trade.entryPrice || 0))
+                : Math.abs((trade.exitPrice || 0) - (trade.entryPrice || 0));
+              const rr = reward / risk;
+              wasFollowed = rr >= 2;
+            }
+          }
+          break;
+        }
+        case 'r_overtrade': {
+          const tradesOnDay = dateCounts[trade.date] || 0;
+          wasFollowed = tradesOnDay <= 3;
+          break;
+        }
+        case 'r_revenge':
+          wasFollowed = trade.emotion !== 'Revenge';
+          break;
+        case 'r_plan':
+          wasFollowed = trade.setup !== undefined && trade.setup !== null && trade.setup !== '' && trade.setup !== 'Undefined';
+          break;
+        default:
+          wasFollowed = trade.rulesFollowed?.includes(rule.id) ?? false;
+          break;
+      }
+
       const s = ruleStats[rule.id];
       s.total++;
       grandTotal++;

@@ -18,11 +18,11 @@ export default function ResetConfirmModal({ isOpen, onClose, onConfirm }: ResetC
       ></div>
 
       {/* Modal Box */}
-      <div className="relative w-full max-w-md transform rounded-2xl border border-red-500/30 bg-slate-900 p-6 shadow-2xl transition-all duration-300 animate-in fade-in-50 zoom-in-95">
+      <div className="relative w-full max-w-md transform rounded-2xl border border-red-500/20 dark:border-red-500/30 bg-white dark:bg-slate-900 p-6 shadow-2xl transition-all duration-300 animate-in fade-in-50 zoom-in-95">
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+          className="absolute top-4 right-4 rounded-lg p-1.5 text-slate-400 dark:text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition-colors"
         >
           <X className="h-5 w-5" />
         </button>
@@ -33,16 +33,16 @@ export default function ResetConfirmModal({ isOpen, onClose, onConfirm }: ResetC
             <AlertTriangle className="h-6 w-6" />
           </div>
 
-          <h3 className="text-lg font-bold text-slate-100">Are you sure?</h3>
-          <p className="text-xs text-slate-400 mt-2 max-w-sm">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100">Are you sure?</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 max-w-sm">
             This will permanently delete all your trading data, local configurations, and custom account balances. This action is irreversible.
           </p>
 
           {/* Buttons */}
-          <div className="grid grid-cols-2 gap-3 w-full mt-6 pt-4 border-t border-slate-800/60">
+          <div className="grid grid-cols-2 gap-3 w-full mt-6 pt-4 border-t border-slate-200 dark:border-slate-800/60">
             <button
               onClick={onClose}
-              className="rounded-xl border border-slate-700 bg-slate-800 py-2.5 text-xs font-semibold text-slate-200 hover:bg-slate-700 hover:text-white transition-all duration-200"
+              className="rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white transition-all duration-200"
             >
               Cancel
             </button>

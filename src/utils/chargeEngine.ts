@@ -280,7 +280,7 @@ export function calculateCharges(
 }
 
 function emptyCharges(): TradeCharges {
-  return { brokerage: 0, stt: 0, gst: 0, sebiTurnover: 0, stampDuty: 0, exchangeTxn: 0, total: 0, mode: 'itemized' };
+  return { brokerage: 0, stt: 0, gst: 0, sebiTurnover: 0, stampDuty: 0, exchangeTxn: 0, other: 0, total: 0, mode: 'itemized' };
 }
 
 export const defaultCharges = emptyCharges();
@@ -334,7 +334,8 @@ export function calculateTradeRR(type: 'BUY' | 'SELL', entryPrice: number | stri
 export function recalculateTrade(
   trade: Record<string, any>,
   brokeragePerOrder: number = 0,
-  brokeragePercent: number = 0
+  brokeragePercent: number = 0,
+  keepPnL: boolean = false
 ): any {
   const type = trade.type || 'BUY';
   const ep = safeNum(trade.entryPrice);
@@ -355,13 +356,13 @@ export function recalculateTrade(
     return trade;
   }
 
-  const pnl = calculateTradePnL(type, ep, xp, qty);
-  const pnlPercent = calculateTradePnLPercent(type, ep, xp, qty);
-  const rrRatio = calculateTradeRR(type, ep, xp, sl);
+  const pnl = keepPnL && typeof trade.pnl === 'number' ? trade.pnl : calculateTradePnL(type, ep, xp, qty);
+  const pnlPercent = keepPnL && typeof trade.pnlPercent === 'number' ? trade.pnlPercent : calculateTradePnLPercent(type, ep, xp, qty);
+  const rrRatio = keepPnL && typeof trade.rrRatio === 'number' ? trade.rrRatio : calculateTradeRR(type, ep, xp, sl);
 
-  // Preserve manual flat charges if user entered them
+  // Preserve manual charges (flat or itemized_manual) if user entered them
   let charges: TradeCharges;
-  if (trade.charges && trade.charges.mode === 'flat') {
+  if (trade.charges && (trade.charges.mode === 'flat' || trade.charges.mode === 'itemized_manual')) {
     charges = {
       brokerage: r2(safeNum(trade.charges.brokerage)),
       stt: r2(safeNum(trade.charges.stt)),
@@ -369,14 +370,15 @@ export function recalculateTrade(
       sebiTurnover: r2(safeNum(trade.charges.sebiTurnover)),
       stampDuty: r2(safeNum(trade.charges.stampDuty)),
       exchangeTxn: r2(safeNum(trade.charges.exchangeTxn)),
+      other: r2(safeNum(trade.charges.other || 0)),
       total: r2(safeNum(trade.charges.total)),
-      mode: 'flat',
+      mode: trade.charges.mode,
     };
   } else {
     charges = calculateCharges(seg, type, ep, xp, qty, brokeragePerOrder, brokeragePercent);
   }
 
-  const netPnl = calculateNetPnl(pnl, charges);
+  const netPnl = keepPnL && typeof trade.netPnl === 'number' ? trade.netPnl : calculateNetPnl(pnl, charges);
   const positionSize = ep * qty;
   const effectiveExposure = positionSize * leverage;
 

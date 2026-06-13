@@ -28,8 +28,14 @@ export default function DashboardApp() {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [sidebarTab, setSidebarTab] = useState('dashboard');
+  const [defaultAddTradeDate, setDefaultAddTradeDate] = useState<string | null>(null);
+  const [openedImportFromSettings, setOpenedImportFromSettings] = useState(false);
 
-  const handleOpenAddTrade = useCallback(() => { setTradeToEdit(null); setIsTradeModalOpen(true); }, []);
+  const handleOpenAddTrade = useCallback((date?: string) => {
+    setTradeToEdit(null);
+    setDefaultAddTradeDate(date || null);
+    setIsTradeModalOpen(true);
+  }, []);
   const handleOpenEditTrade = useCallback((trade: Trade) => { setTradeToEdit(trade); setIsTradeModalOpen(true); }, []);
 
   const handleSaveTrade = useCallback((
@@ -37,8 +43,11 @@ export default function DashboardApp() {
     charges?: TradeCharges,
     autoCalc = true,
   ) => {
-    if (tradeData.id) updateTrade(tradeData.id, tradeData as Partial<Trade>);
-    else addTrade(tradeData, charges, autoCalc);
+    if (tradeData.id) {
+      updateTrade(tradeData.id, { ...tradeData, charges } as Partial<Trade>);
+    } else {
+      addTrade(tradeData, charges, autoCalc);
+    }
   }, [addTrade, updateTrade]);
 
   const handleLogout = useCallback(() => {
@@ -78,7 +87,16 @@ const exportTrades = useCallback(() => {
     workbook,
     'trade-history.xlsx'
   );
-}, [accountTrades]);
+  }, [accountTrades]);
+
+  const handleCloseImportModal = useCallback(() => {
+    setIsImportModalOpen(false);
+    if (openedImportFromSettings) {
+      setShowSettings(true);
+      setOpenedImportFromSettings(false);
+    }
+  }, [openedImportFromSettings]);
+
   if (showSettings) {
     return (
       <ProfileSettings
@@ -91,7 +109,7 @@ const exportTrades = useCallback(() => {
         }}
         onSelectAccount={setActiveAccount}
         onLogout={handleLogout}
-        onImportTrades={() => { setShowSettings(false); setIsImportModalOpen(true); }}
+        onImportTrades={() => { setOpenedImportFromSettings(true); setShowSettings(false); setIsImportModalOpen(true); }}
         onExportTrades={exportTrades}
         onBack={() => setShowSettings(false)}
         onResetData={() => { setShowSettings(false); setIsResetModalOpen(true); }}
@@ -102,7 +120,7 @@ const exportTrades = useCallback(() => {
 
 if (!activeAccount) {
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 p-6">
+    <div className="min-h-screen bg-slate-100 dark:bg-[#020617] text-slate-900 dark:text-slate-100 p-6">
       <AccountView
         accounts={accounts}
         activeAccountId={activeAccountId}
@@ -120,36 +138,41 @@ if (!activeAccount) {
     </div>
   );
 }
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans select-none antialiased">
-      <Navbar
-        userName={user.name || ''}
-        userEmail={user.email || ''}
-        account={activeAccount}
-        accounts={accounts}
-        activeAccountId={activeAccountId}
-        onSelectAccount={setActiveAccount}
-        totalNetPnL={analytics.totalNetPnL}
-        trades={accountTrades}
-        onUpdateAccount={(data) => updateAccount(activeAccount.id, data)}
-        onLogout={handleLogout}
-        onOpenSettings={() => setShowSettings(true)}
-        onOpenImport={() => { setShowSettings(false); setIsImportModalOpen(true); }}
-      />
 
-      <div className="flex flex-1 flex-col md:flex-row">
-        <Sidebar activeTab={sidebarTab} setActiveTab={setSidebarTab} tradesCount={accountTrades.length} />
-        <main className="flex-1 px-4 py-6 md:px-8 md:py-8 pb-24 md:pb-12 max-w-7xl mx-auto w-full overflow-x-hidden">
-          {sidebarTab === 'dashboard' && <DashboardView trades={accountTrades} account={activeAccount} stats={analytics} setActiveTab={setSidebarTab} onAddTradeClick={handleOpenAddTrade} />}
-          {sidebarTab === 'trades' && <CalendarView trades={accountTrades} currency={activeAccount.currencyCode} onEditTrade={handleOpenEditTrade} onDeleteTrade={deleteTrade} onAddTrade={handleOpenAddTrade} onImportTrades={() => setIsImportModalOpen(true)} />}
-          {sidebarTab === 'analytics' && <AnalyticsView trades={accountTrades} account={activeAccount} analytics={analytics} rules={rules} />}
-          {sidebarTab === 'coach' && <AICoachView trades={accountTrades} account={activeAccount} currency={activeAccount.currencyCode} stats={analytics} />}
-          {sidebarTab === 'account' && <AccountView accounts={accounts} activeAccountId={activeAccountId} stats={analytics} onCreateAccount={createAccount} onUpdateAccount={updateAccount} onDeleteAccount={deleteAccount} onSelectAccount={setActiveAccount} rules={rules} onAddRule={addRule} onUpdateRule={updateRule} onDeleteRule={deleteRule} onResetClick={() => setIsResetModalOpen(true)} />}
-        </main>
-      </div>
+      return (
+        <div className="min-h-screen bg-slate-100 dark:bg-[#020617] text-slate-900 dark:text-slate-100 flex flex-col font-sans select-none antialiased">
+          <Navbar
+            userName={user.name || ''}
+            userEmail={user.email || ''}
+            account={activeAccount}
+            accounts={accounts}
+            activeAccountId={activeAccountId}
+            onSelectAccount={setActiveAccount}
+            totalNetPnL={analytics.totalNetPnL}
+            trades={accountTrades}
+            onUpdateAccount={(data) => updateAccount(activeAccount.id, data)}
+            onLogout={handleLogout}
+            onOpenSettings={() => setShowSettings(true)}
+            onOpenImport={() => { setShowSettings(false); setIsImportModalOpen(true); }}
+            onLogoClick={() => {
+              setShowSettings(false);
+              setSidebarTab('dashboard');
+            }}
+          />
 
-      {activeAccount && <TradeModal isOpen={isTradeModalOpen} onClose={() => setIsTradeModalOpen(false)} onSave={handleSaveTrade} tradeToEdit={tradeToEdit} account={activeAccount} rules={[]} currency={activeAccount.currencyCode} />}
-      <ImportTradesModal isOpen={isImportModalOpen} onClose={() => setIsImportModalOpen(false)} onImport={importTrades} accountId={activeAccountId} currency={activeAccount.currencyCode} />
+          <div className="flex flex-1 flex-col md:flex-row">
+            <Sidebar activeTab={sidebarTab} setActiveTab={setSidebarTab} tradesCount={accountTrades.length} />
+            <main className="flex-1 px-4 py-6 md:px-8 md:py-8 pb-24 md:pb-12 max-w-7xl mx-auto w-full overflow-x-hidden">
+              {sidebarTab === 'dashboard' && <DashboardView trades={accountTrades} account={activeAccount} stats={analytics} setActiveTab={setSidebarTab} onAddTradeClick={handleOpenAddTrade} />}
+              {sidebarTab === 'trades' && <CalendarView trades={accountTrades} currency={activeAccount.currencyCode} onEditTrade={handleOpenEditTrade} onDeleteTrade={deleteTrade} onAddTrade={handleOpenAddTrade} onImportTrades={() => setIsImportModalOpen(true)} />}
+              {sidebarTab === 'analytics' && <AnalyticsView trades={accountTrades} account={activeAccount} analytics={analytics} rules={rules} />}
+              {sidebarTab === 'coach' && <AICoachView trades={accountTrades} account={activeAccount} currency={activeAccount.currencyCode} stats={analytics} />}
+              {sidebarTab === 'account' && <AccountView accounts={accounts} activeAccountId={activeAccountId} stats={analytics} onCreateAccount={createAccount} onUpdateAccount={updateAccount} onDeleteAccount={deleteAccount} onSelectAccount={setActiveAccount} rules={rules} onAddRule={addRule} onUpdateRule={updateRule} onDeleteRule={deleteRule} onResetClick={() => setIsResetModalOpen(true)} />}
+            </main>
+          </div>
+
+          {activeAccount && <TradeModal isOpen={isTradeModalOpen} onClose={() => { setIsTradeModalOpen(false); setDefaultAddTradeDate(null); }} onSave={handleSaveTrade} tradeToEdit={tradeToEdit} account={activeAccount} rules={rules} currency={activeAccount.currencyCode} defaultDate={defaultAddTradeDate} />}
+          <ImportTradesModal isOpen={isImportModalOpen} onClose={handleCloseImportModal} onImport={importTrades} accountId={activeAccountId} currency={activeAccount.currencyCode} />
 <ResetConfirmModal
   isOpen={isResetModalOpen}
   onClose={() => setIsResetModalOpen(false)}

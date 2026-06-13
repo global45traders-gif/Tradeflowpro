@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { TrendingUp, Eye, EyeOff, ArrowLeft, Check, X, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, Check, X, CheckCircle2 } from 'lucide-react';
 import { useApp } from '../context/AppContext';
+import { useTheme } from '../context/ThemeContext';
 
 interface PasswordStrength {
   length: boolean;
@@ -46,19 +47,19 @@ function PasswordRequirements({ strength, show }: { strength: PasswordStrength; 
   ];
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 mt-2">
       {requirements.map(r => (
         <div key={r.label} className="flex items-center space-x-1.5 text-[10px]">
           {r.met ? (
-            <Check className="h-3 w-3 text-emerald-400" />
+            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
           ) : (
-            <X className="h-3 w-3 text-slate-600" />
+            <X className="h-3 w-3 text-slate-400 dark:text-slate-600" />
           )}
-          <span className={r.met ? 'text-emerald-400' : 'text-slate-500'}>{r.label}</span>
+          <span className={r.met ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-500 dark:text-slate-500'}>{r.label}</span>
         </div>
       ))}
       <div className="flex items-center space-x-2 mt-2">
-        <div className="flex-1 h-1 bg-slate-800 rounded-full overflow-hidden">
+        <div className="flex-1 h-1 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
           <div className={`h-full rounded-full transition-all duration-300 ${strength.barColor}`}
             style={{ width: `${(strength.score / 5) * 100}%` }} />
         </div>
@@ -69,7 +70,8 @@ function PasswordRequirements({ strength, show }: { strength: PasswordStrength; 
 }
 
 export default function SignupPage() {
-  const { setUser } = useApp();
+  const { user, setUser } = useApp();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -78,6 +80,14 @@ export default function SignupPage() {
   const [showRequirements, setShowRequirements] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleLogoClick = () => {
+    if (user.name || user.email) {
+      navigate('/dashboard');
+    } else {
+      navigate('/');
+    }
+  };
 
   const strength = getPasswordStrength(password);
 
@@ -100,37 +110,43 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-slate-100 dark:bg-[#020617] text-slate-900 dark:text-slate-100 flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
-        <Link to="/" className="flex items-center space-x-2 mb-8 text-slate-400 hover:text-white transition-colors">
+        <Link to="/" className="flex items-center space-x-2 mb-8 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
           <ArrowLeft className="h-4 w-4" /><span className="text-xs">Back to home</span>
         </Link>
 
-        <div className="flex items-center space-x-2 mb-8">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/30">
-            <TrendingUp className="h-4 w-4" />
-          </div>
-          <span className="text-sm font-bold tracking-tight text-white">TradeFlow<span className="text-emerald-400">Pro</span></span>
-        </div>
+        <button
+          onClick={handleLogoClick}
+          aria-label="TradeFlowPro Logo"
+          className="flex items-center bg-transparent border-none p-0 outline-none focus:outline-none focus-visible:opacity-80 transition-opacity cursor-pointer hover:opacity-90 mb-8"
+          type="button"
+        >
+          <img
+            src={theme === 'dark' ? '/logo-unified-dark.png' : '/logo-unified.png'}
+            alt="TradeFlowPro Logo"
+            className="h-11 w-auto object-contain"
+          />
+        </button>
 
-        <h1 className="text-xl font-bold text-white">Create your account</h1>
-        <p className="text-xs text-slate-400 mt-1">Start tracking your trades in minutes</p>
+        <h1 className="text-xl font-bold text-slate-900 dark:text-white">Create your account</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Start tracking your trades in minutes</p>
 
         <form onSubmit={handleSignup} className="mt-6 space-y-4">
           <div>
-            <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Full Name</label>
+            <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Full Name</label>
             <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Your name"
-              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors" />
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors" />
           </div>
 
           <div>
-            <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Email Address</label>
+            <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Email Address</label>
             <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"
-              className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 text-xs text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors" />
+              className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors" />
           </div>
 
           <div>
-            <label className="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
+            <label className="block text-[10px] font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
             <div className="relative">
               <input
                 type={showPw ? 'text' : 'password'}
@@ -138,10 +154,10 @@ export default function SignupPage() {
                 onChange={e => { setPassword(e.target.value.trimStart()); setShowRequirements(true); }}
                 onFocus={() => setShowRequirements(true)}
                 placeholder="Create a strong password"
-                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2.5 pr-10 text-xs text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors"
+                className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3 py-2.5 pr-10 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors"
               />
               <button type="button" onClick={() => setShowPw(!showPw)}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 hover:text-slate-900 dark:hover:text-slate-300 transition-colors cursor-pointer">
                 {showPw ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
@@ -149,13 +165,13 @@ export default function SignupPage() {
           </div>
 
           {error && (
-            <div className="flex items-center space-x-1.5 text-xs text-red-400">
+            <div className="flex items-center space-x-1.5 text-xs text-red-500">
               <X className="h-3.5 w-3.5" /><span>{error}</span>
             </div>
           )}
 
           <button type="submit" disabled={loading || strength.score < 4 || !name.trim() || !email.trim()}
-            className="w-full rounded-lg bg-emerald-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-1.5">
+            className="w-full rounded-lg bg-emerald-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-1.5 cursor-pointer">
             {loading ? (
               <span className="animate-pulse">Creating account...</span>
             ) : (
@@ -165,7 +181,7 @@ export default function SignupPage() {
         </form>
 
         <p className="mt-6 text-center text-[10px] text-slate-500">
-          Already have an account? <Link to="/login" className="text-emerald-400 hover:text-emerald-300 transition-colors">Sign in</Link>
+          Already have an account? <Link to="/login" className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-500 dark:hover:text-emerald-300 transition-colors">Sign in</Link>
         </p>
       </div>
     </div>

@@ -144,7 +144,7 @@ export default function AICoachView({ trades, account, currency, stats }: AICoac
       `1. **System Edge:** Having a high-probability setup (e.g. CPR pullbacks, gap fill strategies, ascending triangle breakouts).\n` +
       `2. **Risk Management:** Never taking a trade where the potential reward is less than 1.5x your risk.\n` +
       `3. **Strict Psychology:** Log every trade in your journal. Reviewing your logs daily helps build the neural pathways for discipline.\n\n` +
-      `Feel free to ask specifically about: "Give me an audit", "How is my psychology?", or "How should I risk my capital?"`;
+      `Feel free to ask specifically about: "Give me an audit", "How is my trading psychology", or "Coach me on risk management".`;
   };
 
   const quickReplies = [
@@ -154,25 +154,25 @@ export default function AICoachView({ trades, account, currency, stats }: AICoac
   ];
 
   return (
-    <div className="flex h-[calc(100vh-10rem)] flex-col rounded-2xl border border-slate-800 bg-slate-900 shadow-sm overflow-hidden">
+    <div className="flex h-[calc(100vh-10rem)] flex-col rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden">
       {/* Bot Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 bg-slate-950/60 p-4">
+      <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-slate-50/60 dark:bg-slate-950/60 p-4">
         <div className="flex items-center space-x-3">
           <div className="relative">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-400 ring-1 ring-emerald-500/30">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/30">
               <Bot className="h-5 w-5" />
             </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-slate-950 bg-emerald-500"></span>
+            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-slate-950 bg-emerald-500"></span>
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-100 flex items-center space-x-1.5">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center space-x-1.5">
               <span>TradeFlow AI Coach</span>
-              <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+              <Sparkles className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
             </h3>
-            <p className="text-[10px] text-slate-400">Personalized trading psychology & discipline diagnostics</p>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">Personalized trading psychology & discipline diagnostics</p>
           </div>
         </div>
-        <div className="flex items-center space-x-2 rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-400 ring-1 ring-emerald-500/20">
+        <div className="flex items-center space-x-2 rounded-lg bg-emerald-500/10 px-2 py-1 text-[10px] font-bold text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/20">
           <Zap className="h-3 w-3" />
           <span>REAL-TIME ANALYSIS ACTIVE</span>
         </div>
@@ -186,34 +186,34 @@ export default function AICoachView({ trades, account, currency, stats }: AICoac
             className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
           >
             <div
-              className={`flex max-w-[85%] items-start space-x-2.5 rounded-2xl p-4 text-xs leading-relaxed
+              className={`flex max-w-[85%] items-start space-x-2.5 rounded-2xl p-4 text-xs leading-relaxed shadow-sm
                 ${
                   msg.sender === 'user'
                     ? 'bg-emerald-500 text-slate-950 rounded-tr-none font-medium'
-                    : 'bg-slate-950 text-slate-300 border border-slate-800 rounded-tl-none'
+                    : 'bg-slate-50 dark:bg-slate-950 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-800 rounded-tl-none'
                 }
               `}
             >
               {msg.sender === 'ai' && (
-                <div className="mt-0.5 rounded bg-emerald-500/10 p-1 text-emerald-400">
+                <div className="mt-0.5 rounded bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-400">
                   <Bot className="h-3.5 w-3.5" />
                 </div>
               )}
               <div className="flex-1 space-y-1">
-                <div className="whitespace-pre-line font-medium">
+                <div className="whitespace-pre-line font-medium text-slate-900 dark:text-slate-100">
                   {/* Process simple markdown like **bold** in the text */}
                   {msg.text.split('\n').map((line, lIdx) => {
                     const parts = line.split('**');
                     return (
                       <p key={lIdx}>
                         {parts.map((part, pIdx) =>
-                          pIdx % 2 === 1 ? <strong key={pIdx} className={msg.sender === 'user' ? 'font-extrabold text-slate-950' : 'text-white font-bold'}>{part}</strong> : part
+                          pIdx % 2 === 1 ? <strong key={pIdx} className={msg.sender === 'user' ? 'font-extrabold text-slate-950' : 'text-slate-950 dark:text-white font-extrabold'}>{part}</strong> : part
                         )}
                       </p>
                     );
                   })}
                 </div>
-                <div className={`text-[9px] text-right mt-1 font-mono ${msg.sender === 'user' ? 'text-slate-800' : 'text-slate-500'}`}>
+                <div className={`text-[9px] text-right mt-1 font-mono ${msg.sender === 'user' ? 'text-slate-800' : 'text-slate-400 dark:text-slate-500'}`}>
                   {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
               </div>
@@ -224,15 +224,15 @@ export default function AICoachView({ trades, account, currency, stats }: AICoac
         {/* Typing indicator */}
         {isTyping && (
           <div className="flex justify-start">
-            <div className="flex max-w-[85%] items-center space-x-2.5 rounded-2xl border border-slate-800 bg-slate-950 p-4 text-xs text-slate-400 rounded-tl-none">
-              <div className="rounded bg-emerald-500/10 p-1 text-emerald-400">
+            <div className="flex max-w-[85%] items-center space-x-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-4 text-xs text-slate-500 dark:text-slate-400 rounded-tl-none shadow-sm">
+              <div className="rounded bg-emerald-500/10 p-1 text-emerald-600 dark:text-emerald-400">
                 <Bot className="h-3.5 w-3.5 animate-bounce" />
               </div>
               <div className="flex items-center space-x-1">
-                <span className="text-[11px] font-medium">AI Coach is reviewing your setups...</span>
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse delay-75"></span>
-                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse delay-150"></span>
+                <span className="text-[11px] font-semibold">AI Coach is reviewing your setups...</span>
+                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse"></span>
+                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse delay-75"></span>
+                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse delay-150"></span>
               </div>
             </div>
           </div>
@@ -241,13 +241,13 @@ export default function AICoachView({ trades, account, currency, stats }: AICoac
       </div>
 
       {/* Suggestion Quick Chips */}
-      <div className="border-t border-slate-800 bg-slate-950/40 px-4 py-2 flex flex-wrap gap-2 items-center">
-        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">Suggestions:</span>
+      <div className="border-t border-slate-200 dark:border-slate-800 bg-slate-50/40 dark:bg-slate-950/40 px-4 py-2 flex flex-wrap gap-2 items-center">
+        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mr-1">Suggestions:</span>
         {quickReplies.map((reply) => (
           <button
             key={reply}
             onClick={() => handleSend(reply)}
-            className="rounded-full border border-slate-800 bg-slate-900 px-3 py-1 text-[11px] font-medium text-slate-300 hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:text-emerald-400 transition-all duration-200"
+            className="rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 px-3 py-1 text-[11px] font-medium text-slate-600 dark:text-slate-300 hover:border-emerald-500/40 hover:bg-emerald-500/5 hover:text-emerald-600 dark:hover:text-emerald-400 transition-all duration-200 cursor-pointer"
           >
             {reply}
           </button>
@@ -255,7 +255,7 @@ export default function AICoachView({ trades, account, currency, stats }: AICoac
       </div>
 
       {/* Chat Input */}
-      <div className="border-t border-slate-800 bg-slate-950/80 p-4">
+      <div className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 p-4">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -268,12 +268,12 @@ export default function AICoachView({ trades, account, currency, stats }: AICoac
             placeholder="Ask AI Coach (e.g. 'How is my trading psychology?', 'Give me an audit')..."
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            className="flex-1 rounded-xl border border-slate-800 bg-slate-950 px-4 py-3 text-xs font-medium text-slate-200 placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors"
+            className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-4 py-3 text-xs font-medium text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors"
           />
           <button
             type="submit"
             disabled={!inputText.trim() || isTyping}
-            className="rounded-xl bg-emerald-500 p-3 text-slate-950 shadow-lg shadow-emerald-500/10 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200"
+            className="rounded-xl bg-emerald-500 p-3 text-slate-950 shadow-lg shadow-emerald-500/10 hover:bg-emerald-400 disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-200 cursor-pointer"
           >
             <Send className="h-4 w-4" />
           </button>
