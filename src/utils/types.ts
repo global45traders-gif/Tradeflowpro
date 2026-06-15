@@ -14,6 +14,7 @@ export interface TradingAccount {
   id: string;
   name: string;
   tag: 'Intraday' | 'Swing' | 'Options' | 'Equity' | 'Custom';
+  accountType?: string;
   capital: number;
   riskPerTradePercent: number;
   brokerType: 'zerodha' | 'groww' | 'angel' | 'upstox' | 'fyers' | 'other';
@@ -55,6 +56,8 @@ export interface Trade {
   setup?: string;
   entryTime?: string;
   exitTime?: string;
+  screenshotUrls?: string[];
+  strategy?: string;
   // Computed convenience fields (derived, not stored)
   positionSize?: number;    // quantity × entryPrice
   effectiveExposure?: number;  // positionSize × leverage

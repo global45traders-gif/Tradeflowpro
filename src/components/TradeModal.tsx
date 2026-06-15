@@ -55,6 +55,9 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
   const [showSegmentDropdown, setShowSegmentDropdown] = useState(false);
   const [rulesFollowed, setRulesFollowed] = useState<string[]>([]);
   const [showRuleSelector, setShowRuleSelector] = useState(false);
+  const [strategy, setStrategy] = useState('');
+  const [screenshotUrls, setScreenshotUrls] = useState<string[]>([]);
+  const [newScreenshotUrl, setNewScreenshotUrl] = useState('');
 
   // Live PnL preview
   const previewEntry = parseFloat(entryPrice) || 0;
@@ -106,6 +109,8 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
         setCharges(tradeToEdit.charges);
         setAutoCalcCharges(tradeToEdit.charges.mode === 'itemized');
         setRulesFollowed(tradeToEdit.rulesFollowed || []);
+        setStrategy(tradeToEdit.strategy || '');
+        setScreenshotUrls(tradeToEdit.screenshotUrls || []);
       } else {
         const initialDate = defaultDate || new Date().toISOString().split('T')[0];
         setDate(initialDate);
@@ -126,6 +131,8 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
         setAutoCalcCharges(true);
         setCharges(defaultCharges);
         setRulesFollowed([]);
+        setStrategy('');
+        setScreenshotUrls([]);
       }
     }
   }, [isOpen, tradeToEdit, defaultDate]);
@@ -168,6 +175,8 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
       entryTime: entryTime || undefined,
       exitTime: exitTime || undefined,
       rulesFollowed,
+      strategy: strategy || undefined,
+      screenshotUrls,
     }, charges, autoCalcCharges);
     onClose();
   };
@@ -403,6 +412,16 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
                 </select>
               </div>
 
+              {/* Strategy */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Strategy / Pattern</label>
+                <input
+                  type="text" placeholder="e.g. CPR Pullback, Gap Fill"
+                  value={strategy} onChange={(e) => setStrategy(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-650 focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+
               {/* Entry Time */}
               <div>
                 <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Entry Time</label>
@@ -488,6 +507,50 @@ export default function TradeModal({ isOpen, onClose, onSave, tradeToEdit, accou
                 value={notes} onChange={(e) => setNotes(e.target.value)}
                 className="w-full rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3.5 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 transition-colors resize-none font-sans"
               ></textarea>
+            </div>
+
+            {/* Screenshots Gallery and Input */}
+            <div className="space-y-2.5">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Screenshot Gallery</label>
+              
+              {screenshotUrls.length > 0 && (
+                <div className="grid grid-cols-3 gap-2 border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 p-3 rounded-xl max-h-40 overflow-y-auto">
+                  {screenshotUrls.map((url, index) => (
+                    <div key={index} className="relative group/thumb h-16 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-800">
+                      <img src={url} alt={`Screenshot ${index + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setScreenshotUrls(prev => prev.filter((_, idx) => idx !== index))}
+                        className="absolute inset-0 bg-black/60 flex items-center justify-center text-red-400 opacity-0 group-hover/thumb:opacity-100 transition-opacity text-[10px] font-bold cursor-pointer"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex space-x-2">
+                <input
+                  type="url"
+                  placeholder="Paste chart/screenshot URL (e.g. https://...)"
+                  value={newScreenshotUrl}
+                  onChange={(e) => setNewScreenshotUrl(e.target.value)}
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 px-3.5 py-2 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newScreenshotUrl.trim()) {
+                      setScreenshotUrls(prev => [...prev, newScreenshotUrl.trim()]);
+                      setNewScreenshotUrl('');
+                    }
+                  }}
+                  className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 hover:bg-emerald-500/20 px-4 py-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 transition-all cursor-pointer"
+                >
+                  Add
+                </button>
+              </div>
             </div>
 
             {/* Charges Section */}

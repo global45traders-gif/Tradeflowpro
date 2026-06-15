@@ -1,24 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowLeft, CheckCircle2, Mail, Info, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Mail, Info } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
-
-// ============================================================================
-// FUTURE NOTE (Supabase Auth Integration):
-// This page is temporary and should be replaced with Supabase Password Recovery
-// once Supabase Auth is implemented.
-//
-// Future implementation will include:
-// - Email verification
-// - Password reset emails
-// - Secure token handling
-// - Google Authentication
-// - Session management
-//
-// Until then, this page acts as a safe placeholder rather than an insecure 
-// password reset system.
-// ============================================================================
+import { supabase } from '../utils/supabaseClient';
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate();
@@ -36,16 +21,30 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim()) return;
 
     setLoading(true);
-    // Simulate API request delay to look professional
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    setLoading(false);
-    setSent(true);
+    setError('');
+
+    try {
+      const { error: resetErr } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (resetErr) {
+        setError(resetErr.message);
+      } else {
+        setSent(true);
+      }
+    } catch (err: any) {
+      setError(err?.message || 'Failed to send reset link');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -75,21 +74,21 @@ export default function ForgotPasswordPage() {
           /* Success Screen */
           <div className="text-center animate-in fade-in-50 duration-200">
             <CheckCircle2 className="h-12 w-12 text-emerald-600 dark:text-emerald-400 mx-auto mb-4" />
-            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Request received.</h1>
+            <h1 className="text-xl font-bold text-slate-900 dark:text-white">Reset email sent</h1>
             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Our support team will review your request and contact you if additional information is required.
+              We've sent a password reset link to <strong className="text-slate-900 dark:text-slate-200">{email}</strong>. 
+              Please click the link in the email to set a new password.
             </p>
-            <Link to="/login" className="mt-8 inline-block w-full rounded-lg bg-slate-250 dark:bg-slate-900 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 py-2.5 text-xs font-bold transition-colors cursor-pointer text-center">
+            <Link to="/login" className="mt-8 inline-block w-full rounded-lg bg-slate-200 dark:bg-slate-900 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-900 dark:text-slate-100 py-2.5 text-xs font-bold transition-colors cursor-pointer text-center">
               Back to Login
             </Link>
           </div>
         ) : (
-          /* Input Form & Support Screen */
+          /* Input Form */
           <div className="animate-in fade-in-50 duration-200">
             <h1 className="text-xl font-bold text-slate-900 dark:text-white">Forgot Your Password?</h1>
             <p className="mt-2 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Password recovery is currently being upgraded as part of our authentication improvements. 
-              If you need assistance accessing your account, please contact our support team and we will help you regain access.
+              Enter your email address below, and we'll send you a link to reset your password.
             </p>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-4">
@@ -105,10 +104,16 @@ export default function ForgotPasswordPage() {
                     placeholder="Enter your email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2.5 pl-9 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:border-emerald-500 focus:outline-none transition-colors"
+                    className="w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-2.5 pl-9 text-xs text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-650 focus:border-emerald-500 focus:outline-none transition-colors"
                   />
                 </div>
               </div>
+
+              {error && (
+                <div className="text-xs text-red-500 font-semibold bg-red-500/10 border border-red-500/20 rounded-lg p-2.5">
+                  {error}
+                </div>
+              )}
 
               <button
                 type="submit"
@@ -116,9 +121,9 @@ export default function ForgotPasswordPage() {
                 className="w-full rounded-lg bg-emerald-500 py-2.5 text-xs font-bold text-slate-950 hover:bg-emerald-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center space-x-1.5"
               >
                 {loading ? (
-                  <span className="animate-pulse">Submitting Request...</span>
+                  <span className="animate-pulse">Sending link...</span>
                 ) : (
-                  <span>Request Assistance</span>
+                  <span>Send Reset Link</span>
                 )}
               </button>
             </form>
@@ -131,7 +136,7 @@ export default function ForgotPasswordPage() {
               <div className="flex-1">
                 <h3 className="text-xs font-bold text-slate-900 dark:text-white mb-1">Need Help?</h3>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed mb-2">
-                  Contact our support team and include the email address used for your account.
+                  If you are having trouble resetting your password, contact our support team.
                 </p>
                 <a
                   href="mailto:support@tradeflow.pro"

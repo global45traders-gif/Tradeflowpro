@@ -86,6 +86,11 @@ export default function DayTradesPopup({ date, trades, currency, onClose, onEdit
                         trade.emotion === 'Fear' ? 'bg-red-500/10 text-red-500 dark:text-red-400' :
                         'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                       }`}>{trade.emotion}</span>
+                      {trade.strategy && (
+                        <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wide">
+                          {trade.strategy}
+                        </span>
+                      )}
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2 text-[11px]">
                       <div><span className="text-slate-500">Entry: </span><span className="font-mono text-slate-800 dark:text-slate-300">{formatCurrency(trade.entryPrice, currency)}</span></div>
@@ -97,6 +102,15 @@ export default function DayTradesPopup({ date, trades, currency, onClose, onEdit
                       <div><span className="text-slate-500">R:R </span><span className="font-mono text-slate-800 dark:text-slate-300">1:{trade.rrRatio}</span></div>
                     </div>
                     {trade.notes && <p className="text-[11px] text-slate-500 dark:text-slate-500 italic mt-2 line-clamp-2">{trade.notes}</p>}
+                    {trade.screenshotUrls && trade.screenshotUrls.length > 0 && (
+                      <div className="flex space-x-2 mt-2 overflow-x-auto py-1 max-w-lg scrollbar-thin">
+                        {trade.screenshotUrls.map((url, i) => (
+                          <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+                            <img src={url} alt={`Screenshot ${i + 1}`} className="h-10 w-16 object-cover rounded-lg border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors" />
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

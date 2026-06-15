@@ -12,6 +12,7 @@ import ImportTradesModal from './components/ImportTradesModal';
 import ResetConfirmModal from './components/ResetConfirmModal';
 import ProfileSettings from './pages/ProfileSettings';
 import { Trade, TradeCharges } from './utils/types';
+import { supabase } from './utils/supabaseClient';
 import * as XLSX from 'xlsx';
 export default function DashboardApp() {
   const {
@@ -50,9 +51,9 @@ export default function DashboardApp() {
     }
   }, [addTrade, updateTrade]);
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback(async () => {
     setShowSettings(false);
-    localStorage.removeItem('tradeflow_auth');
+    await supabase.auth.signOut();
     window.location.href = '/';
   }, []);
 const exportTrades = useCallback(() => {

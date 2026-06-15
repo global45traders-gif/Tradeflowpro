@@ -36,7 +36,7 @@ export default function Navbar({
   onLogoClick,
 }: NavbarProps) {
   const navigate = useNavigate();
-  const { user } = useApp();
+  const { user, setUser } = useApp();
   const { theme } = useTheme();
 
   const handleLogoClick = () => {
@@ -90,7 +90,7 @@ export default function Navbar({
 
   const handleSaveProfile = () => {
     if (editName.trim()) {
-      localStorage.setItem('tradeflow_user_name', editName.trim());
+      setUser({ name: editName.trim() });
       toast('Profile updated');
     }
     setShowEditPopup(false);

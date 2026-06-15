@@ -233,10 +233,27 @@ export default function TradesView({
                     <td className="px-5 py-3.5">
                       <div className="flex flex-col">
                         <span className="font-semibold text-slate-900 dark:text-slate-100 tracking-tight">{trade.symbol}</span>
+                        {trade.strategy && (
+                          <span className="text-[9px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-wider mt-0.5">
+                            {trade.strategy}
+                          </span>
+                        )}
                         {trade.notes && (
                           <span className="text-[10px] text-slate-400 dark:text-slate-500 max-w-[200px] truncate" title={trade.notes}>
                             {trade.notes}
                           </span>
+                        )}
+                        {trade.screenshotUrls && trade.screenshotUrls.length > 0 && (
+                          <div className="flex space-x-1 mt-1">
+                            {trade.screenshotUrls.slice(0, 3).map((url, i) => (
+                              <a key={i} href={url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="flex-shrink-0">
+                                <img src={url} alt="thumbnail" className="h-5 w-8 object-cover rounded border border-slate-200 dark:border-slate-800 hover:border-emerald-500 transition-colors" />
+                              </a>
+                            ))}
+                            {trade.screenshotUrls.length > 3 && (
+                              <span className="text-[9px] text-slate-450 dark:text-slate-500 font-semibold self-center ml-0.5">+{trade.screenshotUrls.length - 3}</span>
+                            )}
+                          </div>
                         )}
                       </div>
                     </td>
