@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
-import { TrendingUp, X, BarChart3, Calendar, Target, Brain, Shield, ArrowRight, FileText, Mail, BookOpen } from 'lucide-react';
+import { X, BarChart3, Calendar, Target, Brain, Shield, ArrowRight, FileText, Mail, BookOpen } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 
 /* ─── Modals ─── */
@@ -114,7 +113,6 @@ function ContactModal({ onClose }: { onClose: () => void }) {
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { user } = useApp();
   const { theme } = useTheme();
 
   const handleLogoClick = () => {
