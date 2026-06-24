@@ -8,6 +8,10 @@ import SignupPage from './pages/SignupPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import OnboardingPage from './pages/OnboardingPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import CookiePage from './pages/CookiePage';
+import CookieBanner from './components/CookieBanner';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useApp();
@@ -44,6 +48,9 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPasswordPage />} />
       <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
       <Route path="/dashboard" element={<ProtectedRoute><DashboardApp /></ProtectedRoute>} />
+      <Route path="/terms" element={<TermsPage />} />
+      <Route path="/privacy" element={<PrivacyPage />} />
+      <Route path="/cookies" element={<CookiePage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
@@ -55,9 +62,9 @@ export default function App() {
       <ThemeProvider>
         <AppProvider>
           <AppRoutes />
+          <CookieBanner />
         </AppProvider>
       </ThemeProvider>
     </BrowserRouter>
   );
 }
-

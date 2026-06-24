@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
 import { TrendingUp, X, BarChart3, Calendar, Target, Brain, Shield, ArrowRight, FileText, Mail, BookOpen } from 'lucide-react';
@@ -370,27 +370,102 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-200/60 dark:border-slate-800/50">
-        <div className="mx-auto max-w-6xl px-4 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex flex-col sm:flex-row items-center gap-3">
-            <button
-              onClick={handleLogoClick}
-              aria-label="TradeFlowPro Logo"
-              className="flex items-center bg-transparent border-none p-0 outline-none focus:outline-none focus-visible:opacity-80 transition-opacity cursor-pointer hover:opacity-90"
-              type="button"
-            >
-              <img
-                src={theme === 'dark' ? '/logo-unified-dark.png' : '/logo-unified.png'}
-                alt="TradeFlowPro Logo"
-                className="h-11 w-auto object-contain"
-              />
-            </button>
-            <span className="text-xs text-slate-500">© 2025</span>
+      <footer className="border-t border-slate-200/60 dark:border-slate-800/50 bg-slate-50/50 dark:bg-slate-950/20 py-12">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 pb-10 border-b border-slate-200/60 dark:border-slate-800/50">
+            
+            {/* Column 1: Company */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Company</h4>
+              <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                <li>
+                  <button onClick={() => setModal('contact')} className="hover:text-emerald-500 transition-colors cursor-pointer text-left bg-transparent border-0 p-0 outline-none">About</button>
+                </li>
+                <li>
+                  <button onClick={() => navigate('/signup')} className="hover:text-emerald-500 transition-colors cursor-pointer text-left bg-transparent border-0 p-0 outline-none font-semibold">Pricing</button>
+                </li>
+                <li>
+                  <button onClick={() => setModal('contact')} className="hover:text-emerald-500 transition-colors cursor-pointer text-left bg-transparent border-0 p-0 outline-none">Contact</button>
+                </li>
+                <li>
+                  <button onClick={() => setModal('contact')} className="hover:text-emerald-500 transition-colors cursor-pointer text-left bg-transparent border-0 p-0 outline-none">Roadmap</button>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 2: Resources */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Resources</h4>
+              <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                <li>
+                  <button onClick={() => setModal('contact')} className="hover:text-emerald-500 transition-colors cursor-pointer text-left bg-transparent border-0 p-0 outline-none">Help Center</button>
+                </li>
+                <li>
+                  <button onClick={() => setModal('contact')} className="hover:text-emerald-500 transition-colors cursor-pointer text-left bg-transparent border-0 p-0 outline-none">FAQs</button>
+                </li>
+                <li className="flex items-center space-x-1.5">
+                  <span className="text-slate-500 dark:text-slate-400">Documentation</span>
+                  <span className="rounded bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 text-[8px] font-bold text-slate-500 dark:text-slate-400 select-none">Soon</span>
+                </li>
+                <li className="flex items-center space-x-1.5">
+                  <span className="text-slate-500 dark:text-slate-400">Blog</span>
+                  <span className="rounded bg-slate-200 dark:bg-slate-800 px-1.5 py-0.5 text-[8px] font-bold text-slate-500 dark:text-slate-400 select-none">Soon</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 3: Legal */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Legal</h4>
+              <ul className="space-y-2 text-xs text-slate-500 dark:text-slate-400">
+                <li>
+                  <Link to="/terms" className="hover:text-emerald-500 transition-colors">Terms of Service</Link>
+                </li>
+                <li>
+                  <Link to="/privacy" className="hover:text-emerald-500 transition-colors">Privacy Policy</Link>
+                </li>
+                <li>
+                  <Link to="/cookies" className="hover:text-emerald-500 transition-colors">Cookie Policy</Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 4: Support */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider">Support</h4>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Have questions or need help? Contact support.
+              </p>
+              <a 
+                href="mailto:support@tradeflowpro.com" 
+                className="block text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:underline"
+              >
+                support@tradeflowpro.com
+              </a>
+            </div>
+
           </div>
-          <div className="flex items-center space-x-4 text-[10px] text-slate-500">
-            <button onClick={() => setModal('privacy')} className="hover:text-slate-900 dark:hover:text-slate-300 transition-colors cursor-pointer font-semibold">Privacy</button>
-            <button onClick={() => setModal('terms')} className="hover:text-slate-900 dark:hover:text-slate-300 transition-colors cursor-pointer font-semibold">Terms</button>
-            <button onClick={() => setModal('contact')} className="hover:text-slate-900 dark:hover:text-slate-300 transition-colors cursor-pointer font-semibold">Contact</button>
+
+          {/* Bottom Footer Row */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <button
+                onClick={handleLogoClick}
+                aria-label="TradeFlowPro Logo"
+                className="flex items-center bg-transparent border-none p-0 outline-none focus:outline-none focus-visible:opacity-80 transition-opacity cursor-pointer hover:opacity-90"
+                type="button"
+              >
+                <img
+                  src={theme === 'dark' ? '/logo-unified-dark.png' : '/logo-unified.png'}
+                  alt="TradeFlowPro Logo"
+                  className="h-11 w-auto object-contain"
+                />
+              </button>
+              <span className="text-xs text-slate-500">© 2026 TradeFlowPro. All rights reserved.</span>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-450 max-w-sm text-center sm:text-right leading-normal">
+              Empowering disciplined trading through data analytics and emotional feedback.
+            </p>
           </div>
         </div>
       </footer>

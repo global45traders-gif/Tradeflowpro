@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { Send, Bot, Sparkles, Zap, Plus, Trash2, MessageSquare, Menu, X } from 'lucide-react';
+import { Send, Bot, Sparkles, Zap, Plus, Trash2, MessageSquare, Menu, X, Brain, Shield, Target, BookOpen, BarChart3 } from 'lucide-react';
 import { Trade, TradingAccount, Message } from '../utils/types';
 import { formatCurrencyWithSign } from '../utils/format';
 import { supabase } from '../utils/supabaseClient';
+import { useApp } from '../context/AppContext';
+
+const AI_COACH_ENABLED = import.meta.env.VITE_AI_COACH_ENABLED === 'true';
 
 interface AICoachViewProps {
   trades: Trade[];
@@ -27,6 +30,8 @@ interface ChatSession {
 }
 
 export default function AICoachView({ trades, account, currency, stats }: AICoachViewProps) {
+  const { user } = useApp();
+  const [notified, setNotified] = useState<'idle' | 'success' | 'unavailable' | 'loading'>('idle');
   const [chats, setChats] = useState<ChatSession[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -329,7 +334,198 @@ export default function AICoachView({ trades, account, currency, stats }: AICoac
     'Coach me on risk management',
   ];
 
+  const plannedFeatures = [
+    {
+      icon: BarChart3,
+      title: 'Performance Audits',
+      desc: 'Analyze overall trading performance and identify strengths and weaknesses.',
+    },
+    {
+      icon: Brain,
+      title: 'Trading Psychology',
+      desc: 'Detect emotional patterns such as revenge trading, FOMO, hesitation and overtrading.',
+    },
+    {
+      icon: Shield,
+      title: 'Risk Management Coach',
+      desc: 'Review position sizing, drawdowns and overall risk consistency.',
+    },
+    {
+      icon: Target,
+      title: 'Strategy Review',
+      desc: 'Identify which trading strategies consistently perform best.',
+    },
+    {
+      icon: BookOpen,
+      title: 'Journal Insights',
+      desc: 'Generate meaningful insights from trading journal entries.',
+    },
+    {
+      icon: Zap,
+      title: 'Personalized Improvement Plans',
+      desc: 'Provide tailored recommendations for improving trading discipline and execution.',
+    },
+  ];
+
+  const handleNotifyMe = async () => {
+    setNotified('loading');
+    try {
+      const email = user.email || '';
+      if (!email) {
+        setNotified('unavailable');
+        return;
+      }
+      const { error } = await supabase
+        .from('waiting_list')
+        .insert([{ email, feature: 'ai_coach', created_at: new Date().toISOString() }]);
+
+      if (error) {
+        console.warn('Could not store email in waiting_list table. Fallback to unavailable.', error);
+        setNotified('unavailable');
+      } else {
+        setNotified('success');
+      }
+    } catch (err) {
+      setNotified('unavailable');
+    }
+  };
+
+  if (!AI_COACH_ENABLED) {
+    return (
+      <div className="flex h-[calc(100vh-10rem)] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-y-auto relative p-6 md:p-10 justify-center">
+        <div className="max-w-3xl w-full flex flex-col items-center text-center">
+          {/* Badge */}
+          <div className="mb-4 inline-flex items-center space-x-2 rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3 py-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span>COMING SOON</span>
+          </div>
+
+          {/* Premium Illustration */}
+          <div className="relative flex items-center justify-center w-24 h-24 mb-6">
+            <div className="absolute inset-0 rounded-full bg-emerald-500/10 dark:bg-emerald-500/5 animate-ping duration-3000"></div>
+            <div className="absolute inset-2 rounded-full bg-gradient-to-tr from-emerald-500/20 to-teal-500/20 blur-md"></div>
+            <div className="relative flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-950/80 border border-emerald-500/30 text-emerald-400 shadow-xl shadow-emerald-950/20">
+              <Brain className="h-8 w-8 animate-pulse" />
+              <Sparkles className="absolute -top-1 -right-1 h-4.5 w-4.5 text-emerald-400 animate-bounce" style={{ animationDuration: '3s' }} />
+            </div>
+          </div>
+
+          {/* Heading */}
+          <h2 className="text-xl md:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            TradeFlow AI Coach
+          </h2>
+          <p className="mt-3 max-w-lg text-xs md:text-sm text-slate-550 dark:text-slate-400 leading-relaxed">
+            We're building an intelligent AI trading coach designed to help you become a more disciplined and consistent trader.
+            This feature is currently under development and will be released in a future update.
+          </p>
+
+          {/* Features Grid */}
+          <div className="w-full mt-10 grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+            {plannedFeatures.map((feat, i) => {
+              const Icon = feat.icon;
+              return (
+                <div key={i} className="flex flex-col items-center p-4 rounded-xl border border-slate-150 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20 shadow-sm text-center animate-in duration-200">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-3 animate-pulse">
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-850 dark:text-slate-205 mb-1.5">{feat.title}</h4>
+                  <p className="text-[10px] text-slate-550 dark:text-slate-400 leading-normal">{feat.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Progress Tracker & Notify Button Grid */}
+          <div className="w-full mt-10 grid gap-6 md:grid-cols-2 items-start text-left">
+            {/* Progress Section */}
+            <div className="bg-slate-50/50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
+              <h4 className="text-xs font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider">Development Status</h4>
+              <div className="space-y-3">
+                <div>
+                  <div className="flex justify-between text-[11px] mb-1">
+                    <span className="font-semibold text-slate-700 dark:text-slate-350">Core AI Infrastructure</span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">80%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '80%' }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] mb-1">
+                    <span className="font-semibold text-slate-700 dark:text-slate-350">Trade Analytics Engine</span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">70%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '70%' }}></div>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex justify-between text-[11px] mb-1">
+                    <span className="font-semibold text-slate-700 dark:text-slate-350">Psychology Analysis</span>
+                    <span className="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">55%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
+                    <div className="bg-emerald-500 h-full rounded-full" style={{ width: '55%' }}></div>
+                  </div>
+                </div>
+              </div>
+              <div className="border-t border-slate-200 dark:border-slate-800 pt-3 flex items-center justify-between text-xs">
+                <span className="font-semibold text-slate-500 dark:text-slate-500">Public Release</span>
+                <span className="rounded bg-emerald-500/10 px-2.5 py-0.5 font-bold text-emerald-600 dark:text-emerald-400 ring-1 ring-emerald-500/25">Coming Soon</span>
+              </div>
+            </div>
+
+            {/* Notify Button Section */}
+            <div className="bg-slate-50/50 dark:bg-slate-950/30 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col justify-between h-full min-h-[190px]">
+              <div>
+                <h4 className="text-xs font-bold text-slate-450 dark:text-slate-400 uppercase tracking-wider mb-2">Beta Enrollment</h4>
+                <p className="text-[11px] text-slate-550 dark:text-slate-400 leading-relaxed mb-4">
+                  Get notified the instant our AI Coach goes live. Logged-in users are automatically eligible for early access.
+                </p>
+              </div>
+              
+              <div className="space-y-3 mt-auto">
+                {notified === 'idle' && (
+                  <button
+                    onClick={handleNotifyMe}
+                    className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 text-slate-950 font-bold text-xs hover:bg-emerald-400 transition-colors shadow-md shadow-emerald-500/10 cursor-pointer text-center"
+                  >
+                    Notify Me When Available
+                  </button>
+                )}
+                {notified === 'loading' && (
+                  <div className="flex items-center justify-center space-x-2 text-xs font-semibold text-slate-500 py-2">
+                    <span className="animate-spin h-4 w-4 border-2 border-emerald-500 border-t-transparent rounded-full"></span>
+                    <span>Submitting request...</span>
+                  </div>
+                )}
+                {notified === 'success' && (
+                  <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2 text-center font-bold">
+                    ✓ You will be notified at {user.email}!
+                  </div>
+                )}
+                {notified === 'unavailable' && (
+                  <div className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-250 dark:bg-slate-800/40 border border-slate-300 dark:border-slate-700/50 rounded-xl px-3 py-2 text-center">
+                    Notifications will be available soon.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Educational Disclaimer */}
+          <p className="text-[10px] text-slate-450 dark:text-slate-500 max-w-lg mt-12 text-center leading-relaxed border-t border-slate-200 dark:border-slate-800 pt-4 mb-6">
+            AI Coach is currently under active development.<br />
+            When released, it will provide educational insights based on your trading journal.<br />
+            TradeFlowPro does not provide financial, investment or trading advice.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
+
     <div className="flex h-[calc(100vh-10rem)] border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-2xl shadow-sm overflow-hidden relative">
       {/* Chats List Sidebar (ChatGPT style) */}
       <div className={`flex flex-col border-r border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/40 w-60 flex-shrink-0 transition-transform duration-250 z-20 absolute md:relative inset-y-0 left-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0 md:w-0 overflow-hidden border-r-0'}`}>
