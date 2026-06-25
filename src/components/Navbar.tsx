@@ -109,7 +109,7 @@ export default function Navbar({
             <img
               src={theme === 'dark' ? '/logo-unified-dark.png' : '/logo-unified.png'}
               alt="TradeFlowPro Logo"
-              className="h-11 w-auto object-contain"
+              className="h-[38px] w-auto object-contain"
             />
           </button>
 
