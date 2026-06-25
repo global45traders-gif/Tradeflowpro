@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, ArrowLeft, Check, X, CheckCircle2, Lock } from 'lucide-react';
 import { useApp } from '../context/AppContext';

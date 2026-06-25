@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { useTheme } from '../context/ThemeContext';
-import { TrendingUp, ChevronDown, Settings, LogOut, Edit3, Wallet, ExternalLink, CheckCircle2 } from 'lucide-react';
+import { ChevronDown, Settings, LogOut, Edit3, Wallet, ExternalLink, CheckCircle2 } from 'lucide-react';
 import { TradingAccount, Trade } from '../utils/types';
 import { formatCurrencyWithSign } from '../utils/currency';
 import ThemeToggle from './ThemeToggle';
@@ -36,7 +36,7 @@ export default function Navbar({
   onLogoClick,
 }: NavbarProps) {
   const navigate = useNavigate();
-  const { user, setUser } = useApp();
+  const { setUser } = useApp();
   const { theme } = useTheme();
 
   const handleLogoClick = () => {
